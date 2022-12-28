@@ -110,7 +110,7 @@ var Draughts = function (fen) {
     load(fen)
   }
 
-  function clear () {
+  function clear() {
     position = DEFAULT_POSITION_INTERNAL
     turn = WHITE
     moveNumber = 1
@@ -119,11 +119,11 @@ var Draughts = function (fen) {
     update_setup(generate_fen())
   }
 
-  function reset () {
+  function reset() {
     load(DEFAULT_FEN)
   }
 
-  function load (fen) {
+  function load(fen) {
     // TODO for default fen
     if (!fen || fen === DEFAULT_FEN) {
       position = DEFAULT_POSITION_INTERNAL
@@ -186,7 +186,7 @@ var Draughts = function (fen) {
     return true
   }
 
-  function validate_fen (fen) {
+  function validate_fen(fen) {
     var errors = [
       {
         code: 0,
@@ -303,7 +303,7 @@ var Draughts = function (fen) {
     return {valid: true, error_number: 0, error: errors[0]}
   }
 
-  function generate_fen () {
+  function generate_fen() {
     var black = []
     var white = []
     var externalPosition = convertPosition(position, 'external')
@@ -328,7 +328,7 @@ var Draughts = function (fen) {
     return turn.toUpperCase() + ':W' + white.join(',') + ':B' + black.join(',')
   }
 
-  function generatePDN (options) {
+  function generatePDN(options) {
     // for html usage {maxWidth: 72, newline_char: "<br />"}
     var newline = (typeof options === 'object' && typeof options.newline_char === 'string')
       ? options.newline_char : '\n'
@@ -401,7 +401,7 @@ var Draughts = function (fen) {
     return result.join('')
   }
 
-  function set_header (args) {
+  function set_header(args) {
     for (var i = 0; i < args.length; i += 2) {
       if (typeof args[i] === 'string' && typeof args[i + 1] === 'string') {
         header[args[i]] = args[i + 1]
@@ -416,7 +416,7 @@ var Draughts = function (fen) {
    * the setup is only updated if history.length is zero, ie moves haven't been
    * made.
    */
-  function update_setup (fen) {
+  function update_setup(fen) {
     if (history.length > 0) {
       return false
     }
@@ -429,19 +429,19 @@ var Draughts = function (fen) {
     }
   }
 
-  function parsePDN (pdn, options) {
+  function parsePDN(pdn, options) {
     var newline_char = (typeof options === 'object' &&
-    typeof options.newline_char === 'string')
+      typeof options.newline_char === 'string')
       ? options.newline_char : '\r?\n'
     var regex = new RegExp('^(\\[(.|' + mask(newline_char) + ')*\\])' +
       '(' + mask(newline_char) + ')*' +
       '1.(' + mask(newline_char) + '|.)*$', 'g')
 
-    function mask (str) {
+    function mask(str) {
       return str.replace(/\\/g, '\\')
     }
 
-    function parsePDNHeader (header, options) {
+    function parsePDNHeader(header, options) {
       var headerObj = {}
       var headers = header.split(new RegExp(mask(newline_char)))
       var key = ''
@@ -531,7 +531,7 @@ var Draughts = function (fen) {
     return true
   }
 
-  function getMoveObject (move) {
+  function getMoveObject(move) {
     // TODO move flags for both capture and promote??
     var tempMove = {}
     var matches = move.split(/[x|-]/)
@@ -562,7 +562,7 @@ var Draughts = function (fen) {
     return false
   }
 
-  function makeMove (move) {
+  function makeMove(move) {
     move.piece = position.charAt(convertNumber(move.from, 'internal'))
     position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece)
     position = setCharAt(position, convertNumber(move.from, 'internal'), 0)
@@ -590,12 +590,12 @@ var Draughts = function (fen) {
     turn = swap_color(turn)
   }
 
-  function get (square) {
+  function get(square) {
     var piece = position.charAt(convertNumber(square, 'internal'))
     return piece
   }
 
-  function put (piece, square) {
+  function put(piece, square) {
     // check for valid piece string
     if (SYMBOLS.match(piece) === null) {
       return false
@@ -611,7 +611,7 @@ var Draughts = function (fen) {
     return true
   }
 
-  function remove (square) {
+  function remove(square) {
     var piece = get(square)
     position = setCharAt(position, convertNumber(square, 'internal'), 0)
     update_setup(generate_fen())
@@ -619,7 +619,7 @@ var Draughts = function (fen) {
     return piece
   }
 
-  function build_move (board, from, to, flags, promotion) {
+  function build_move(board, from, to, flags, promotion) {
     var move = {
       color: turn,
       from: from,
@@ -640,11 +640,11 @@ var Draughts = function (fen) {
     return move
   }
 
-  function generate_moves (square) {
+  function generate_moves(square) {
     var moves = []
 
     if (square) {
-      moves = getLegalMoves(square)
+      moves = getLegalMoves(square.square)
     } else {
       var tempCaptures = getCaptures()
       // TODO change to be applicable to array
@@ -663,13 +663,17 @@ var Draughts = function (fen) {
     return moves
   }
 
-  function getLegalMoves (index) {
+  function getLegalMoves(index) {
     var legalMoves
     index = parseInt(index, 10)
     if (!Number.isNaN(index)) {
       index = convertNumber(index, 'internal')
 
-      var captures = capturesAtSquare(index, {position: position, dirFrom: ''}, {jumps: [index], takes: [], piecesTaken: []})
+      var captures = capturesAtSquare(index, {position: position, dirFrom: ''}, {
+        jumps: [index],
+        takes: [],
+        piecesTaken: []
+      })
 
       captures = longestCapture(captures)
       legalMoves = captures
@@ -681,7 +685,7 @@ var Draughts = function (fen) {
     return convertMoves(legalMoves, 'external')
   }
 
-  function getMoves (index) {
+  function getMoves(index) {
     var moves = []
     var us = turn
 
@@ -696,7 +700,7 @@ var Draughts = function (fen) {
     return moves
   }
 
-  function setCharAt (position, idx, chr) {
+  function setCharAt(position, idx, chr) {
     idx = parseInt(idx, 10)
     if (idx > position.length - 1) {
       return position.toString()
@@ -705,7 +709,7 @@ var Draughts = function (fen) {
     }
   }
 
-  function movesAtSquare (square) {
+  function movesAtSquare(square) {
     var moves = []
     var posFrom = square
     var piece = position.charAt(posFrom)
@@ -727,14 +731,14 @@ var Draughts = function (fen) {
         break
       case 'W':
       case 'B':
-        dirStrings = directionStrings(position, posFrom, 2)
+        dirStrings = directionStrings(position, posFrom)
         for (dir in dirStrings) {
           str = dirStrings[dir]
 
-          matchArray = str.match(/^[BW]0+/) // e.g. B000, W0
+          matchArray = str.match(/^0+/) // e.g. B000, W0
           if (matchArray !== null) {
-            for (var i = 1; i < matchArray[0].length; i++) {
-              posTo = posFrom + (i * STEPS[dir])
+            for (let i = 1; i <= matchArray[0].length; i++) {
+              posTo = posFrom + i * STEPS[dir]
               moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
               moves.push(moveObject)
             }
@@ -747,7 +751,7 @@ var Draughts = function (fen) {
     return moves
   }
 
-  function getCaptures () {
+  function getCaptures() {
     var us = turn
     var captures = []
     for (var i = 0; i < position.length; i++) {
@@ -766,7 +770,7 @@ var Draughts = function (fen) {
     return captures
   }
 
-  function capturesAtSquare (posFrom, state, capture) {
+  function capturesAtSquare(posFrom, state, capture) {
     var piece = state.position.charAt(posFrom)
     if (piece !== 'b' && piece !== 'w' && piece !== 'B' && piece !== 'W') {
       return [capture]
@@ -857,7 +861,7 @@ var Draughts = function (fen) {
     return captureArray
   }
 
-  function push (move) {
+  function push(move) {
     history.push({
       move: move,
       turn: turn,
@@ -865,7 +869,7 @@ var Draughts = function (fen) {
     })
   }
 
-  function undoMove () {
+  function undoMove() {
     var old = history.pop()
     if (!old) {
       return null
@@ -882,25 +886,20 @@ var Draughts = function (fen) {
         position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
       }
     } else if (move.flags === 'p') {
-      if (move.captures) {
-        for (var i = 0; i < move.captures.length; i += 1) {
-          position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
-        }
-      }
       position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase())
     }
     return move
   }
 
-  function get_disambiguator (move) {
+  function get_disambiguator(move) {
 
   }
 
-  function swap_color (c) {
+  function swap_color(c) {
     return c === WHITE ? BLACK : WHITE
   }
 
-  function isInteger (int) {
+  function isInteger(int) {
     var regex = /^\d+$/
     if (regex.test(int)) {
       return true
@@ -909,7 +908,7 @@ var Draughts = function (fen) {
     }
   }
 
-  function longestCapture (captures) {
+  function longestCapture(captures) {
     var maxJumpCount = 0
     for (var i = 0; i < captures.length; i++) {
       var jumpCount = captures[i].jumps.length
@@ -931,7 +930,7 @@ var Draughts = function (fen) {
     return selectedCaptures
   }
 
-  function convertMoves (moves, type) {
+  function convertMoves(moves, type) {
     var tempMoves = []
     if (!type || moves.length === 0) {
       return tempMoves
@@ -952,7 +951,7 @@ var Draughts = function (fen) {
     return tempMoves
   }
 
-  function convertNumber (number, notation) {
+  function convertNumber(number, notation) {
     var num = parseInt(number, 10)
     var result
     switch (notation) {
@@ -968,7 +967,7 @@ var Draughts = function (fen) {
     return result
   }
 
-  function convertPosition (position, notation) {
+  function convertPosition(position, notation) {
     var sub1, sub2, sub3, sub4, sub5, newPosition
     switch (notation) {
       case 'internal':
@@ -993,7 +992,7 @@ var Draughts = function (fen) {
     return newPosition
   }
 
-  function outsideBoard (square) {
+  function outsideBoard(square) {
     // internal notation only
     var n = parseInt(square, 10)
     if (n >= 0 && n <= 55 && (n % 11) !== 0) {
@@ -1003,7 +1002,8 @@ var Draughts = function (fen) {
     }
   }
 
-  function directionStrings (tempPosition, square, maxLength) {
+// -W0000000b0-0000000000-0000000000-0000000000-0000000000-, 1, 2
+  function directionStrings(tempPosition, square, maxLength) {
     // Create direction strings for square at position (internal representation)
     // Output object with four directions as properties (four rhumbs).
     // Each property has a string as value representing the pieces in that direction.
@@ -1011,43 +1011,41 @@ var Draughts = function (fen) {
     // Example of output: {NE: 'b0', SE: 'b00wb00', SW: 'bbb00', NW: 'bb'}
     // Strings have maximum length of given maxLength.
     if (arguments.length === 2) {
-      maxLength = 100
+      maxLength = 100;
     }
-    var dirStrings = {}
+
     if (outsideBoard(square) === true) {
-      return 334
+      return 334;
     }
 
-    for (var dir in STEPS) {
-      var dirArray = []
-      var i = 0
-      var index = square
-      do {
-        dirArray[i] = tempPosition.charAt(index)
-        i++
-        index = square + i * STEPS[dir]
-        var outside = outsideBoard(index)
-      } while (outside === false && i < maxLength)
+    let dirStrings = {};
+    for (const [dir, offset] of Object.entries(STEPS)) {
+      let dirArray = [];
+      let index = square + offset;
+      while (!outsideBoard(index) && dirArray.length < maxLength) {
+        dirArray.push(tempPosition.charAt(index));
+        index += offset;
+      }
 
-      dirStrings[dir] = dirArray.join('')
+      dirStrings[dir] = dirArray.join('');
     }
 
-    return dirStrings
+    return dirStrings;
   }
 
-  function oppositeDir (direction) {
+  function oppositeDir(direction) {
     var opposite = {NE: 'SW', SE: 'NW', SW: 'NE', NW: 'SE'}
     return opposite[direction]
   }
 
-  function validDir (piece, dir) {
+  function validDir(piece, dir) {
     var validDirs = {}
     validDirs.w = {NE: true, SE: false, SW: false, NW: true}
     validDirs.b = {NE: false, SE: true, SW: true, NW: false}
     return validDirs[piece][dir]
   }
 
-  function ascii (unicode) {
+  function ascii(unicode) {
     var extPosition = convertPosition(position, 'external')
     var s = '\n+-------------------------------+\n'
     var i = 1
@@ -1077,7 +1075,7 @@ var Draughts = function (fen) {
     return s
   }
 
-  function gameOver () {
+  function gameOver() {
     // First check if any piece left
     for (var i = 0; i < position.length; i++) {
       if (position[i].toLowerCase() === turn.toLowerCase()) {
@@ -1088,7 +1086,7 @@ var Draughts = function (fen) {
     return true
   }
 
-  function getHistory (options) {
+  function getHistory(options) {
     var tempHistory = clone(history)
     var moveHistory = []
     var verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose)
@@ -1104,11 +1102,11 @@ var Draughts = function (fen) {
     return moveHistory
   }
 
-  function getPosition () {
+  function getPosition() {
     return convertPosition(position, 'external')
   }
 
-  function makePretty (uglyMove) {
+  function makePretty(uglyMove) {
     var move = {}
     move.from = uglyMove.move.from
     move.to = uglyMove.move.to
@@ -1121,17 +1119,17 @@ var Draughts = function (fen) {
     return move
   }
 
-  function clone (obj) {
+  function clone(obj) {
     var dupe = JSON.parse(JSON.stringify(obj))
     return dupe
   }
 
-  function trim (str) {
+  function trim(str) {
     return str.replace(/^\s+|\s+$/g, '')
   }
 
   // TODO
-  function perft (depth) {
+  function perft(depth) {
     var moves = generate_moves({legal: false})
     var nodes = 0
 
@@ -1179,7 +1177,8 @@ var Draughts = function (fen) {
 
     pdn: generatePDN,
 
-    load_pdn: function (pdn, options) {},
+    load_pdn: function (pdn, options) {
+    },
 
     parsePDN: parsePDN,
 
@@ -1193,7 +1192,7 @@ var Draughts = function (fen) {
       return turn.toLowerCase()
     },
 
-    move: function move (move) {
+    move: function move(move) {
       if (typeof move.to === 'undefined' && typeof move.from === 'undefined') {
         return false
       }
