@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 /*
 ||==================================================================================
@@ -101,6 +101,7 @@ var Draughts = function (fen) {
   var moveNumber = 1
   var history = []
   var header = {}
+  let states = [];
 
   if (!fen) {
     position = DEFAULT_POSITION_INTERNAL
@@ -752,9 +753,9 @@ var Draughts = function (fen) {
   }
 
   function getCaptures() {
-    var us = turn
-    var captures = []
-    for (var i = 0; i < position.length; i++) {
+    let us = turn;
+    let captures = [];
+    for (let i = 0; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
         var posFrom = i
         var state = {position: position, dirFrom: ''}
@@ -791,8 +792,8 @@ var Draughts = function (fen) {
       switch (piece) {
         case 'b':
         case 'w':
-          var matchArray = str.match(/^b[wW]0|^w[bB]0/) // matches: bw0, bW0, wB0, wb0
-          if (matchArray !== null) {
+          var matchArray = str.match(/^[wW]0|^[bB]0/) // matches: w0, W0, B0, b0
+          if (matchArray !== null && piece !== matchArray[0].charAt(0)) {
             var posTo = posFrom + (2 * STEPS[dir])
             var posTake = posFrom + (1 * STEPS[dir])
             if (capture.takes.indexOf(posTake) > -1) {
@@ -815,12 +816,12 @@ var Draughts = function (fen) {
           break
         case 'B':
         case 'W':
-          matchArray = str.match(/^B0*[wW]0+|^W0*[bB]0+/) // matches: B00w000, WB00
-          if (matchArray !== null) {
+          matchArray = str.match(/^0*[wW]0+|^0*[bB]0+/) // matches: 00w000, B00
+          if (matchArray !== null && piece !== matchArray[0].match(/[wWbB]/)[0].charAt(0)) {
             var matchStr = matchArray[0]
             var matchArraySubstr = matchStr.match(/[wW]0+$|[bB]0+$/) // matches: w000, B00
             var matchSubstr = matchArraySubstr[0]
-            var takeIndex = matchStr.length - matchSubstr.length
+            var takeIndex = matchStr.length + 1 - matchSubstr.length // add 1 for current position
             posTake = posFrom + (takeIndex * STEPS[dir])
             if (capture.takes.indexOf(posTake) > -1) {
               continue
@@ -867,11 +868,13 @@ var Draughts = function (fen) {
       turn: turn,
       moveNumber: moveNumber
     })
+    states.push(generate_fen());
   }
 
   function undoMove() {
-    var old = history.pop()
-    if (!old) {
+    let old = history.pop()
+    let oldState = states.pop()
+    if (!old || !oldState) {
       return null
     }
 
@@ -1075,12 +1078,31 @@ var Draughts = function (fen) {
     return s
   }
 
+  function inThreeFoldRepition() {
+    let three_fold = false;
+    // Check if an element occurs three times in 'states' array:
+    for (let i = 0; i < states.length; i++) {
+      let count = 0;
+      for (let j = 0; j < states.length; j++) {
+        if (states[i] === states[j]) {
+          count++;
+        }
+      }
+      if (count >= 3) {
+        three_fold = true;
+        break;
+      }
+    }
+
+    return three_fold;
+  }
+
   function gameOver() {
     // First check if any piece left
     for (var i = 0; i < position.length; i++) {
       if (position[i].toLowerCase() === turn.toLowerCase()) {
-        // if moves left game not over
-        return generate_moves().length === 0
+        // if moves left and not in three fold repetition game not over
+        return generate_moves().length === 0 && !inThreeFoldRepition();
       }
     }
     return true
