@@ -1,6 +1,6 @@
 {
   "name": "@jortvl/draughts",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A draughts(/checkers) engine, without AI computer component.",
   "keywords": [
     "checkers",
@@ -48,6 +48,6 @@
   },
   "scripts": {
     "test": "mocha test/tests.js",
-    "prepublish": "touch dist | uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
+    "prepublish": "mkdir dist | uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
   }
 }
