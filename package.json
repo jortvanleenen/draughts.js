@@ -48,6 +48,6 @@
   },
   "scripts": {
     "test": "mocha test/tests.js",
-    "prepublish": "uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
+    "prepublish": "touch dist | uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
   }
 }
