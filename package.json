@@ -1,6 +1,6 @@
 {
   "name": "@jortvl/draughts",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A draughts(/checkers) engine, without AI computer component.",
   "keywords": [
     "checkers",
@@ -31,6 +31,15 @@
   },
   "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
   "main": "src/draughts.js",
+  "files": [
+    "src",
+    "dist",
+    "test",
+    ".gitignore",
+    ".jshintrc",
+    "package-lock.json",
+    "README.md"
+  ],
   "dependencies": {},
   "devDependencies": {
     "mocha": "*",
