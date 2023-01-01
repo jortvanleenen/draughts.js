@@ -1,29 +1,44 @@
 {
   "name": "draughts",
-  "version": "0.0.1",
-  "description": "A javascript draughts library for move generation/validation, piece placement/movement and draw detection",
+  "version": "0.1.0",
+  "description": "A draughts(/checkers) engine, without AI computer component.",
+  "keywords": [
+    "checkers",
+    "draughts",
+    "draughts engine",
+    "checkers engine",
+    "board game"
+  ],
+  "license": "MPL-2.0",
+  "author": "shubhu",
+  "contributors": [
+    {
+      "name": "Jort van Leenen",
+      "email": "jort@vleenen.nl",
+      "url": "https://www.jortvanleenen.nl/"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jortvanleenen/draughts.js"
+  },
+  "bugs": {
+    "url": "https://github.com/jortvanleenen/draughts.js/issues"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/jortvanleenen"
+  },
+  "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
   "main": "draughts.js",
+  "dependencies": {},
   "devDependencies": {
     "mocha": "*",
     "chai": "*",
     "uglify-js": "*"
   },
   "scripts": {
-    "test":   "./node_modules/.bin/mocha ./tests.js",
+    "test": "./node_modules/.bin/mocha ./tests.js",
     "minify": "./node_modules/.bin/uglifyjs draughts.js -c -m --comments 'license' > draughts.min.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shubhendusaurabh/draughts.js.git"
-  },
-  "keywords": [
-    "checkers",
-    "draughts"
-  ],
-  "author": "shubhu",
-  "license": "MPL-2.0",
-  "bugs": {
-    "url": "https://github.com/shubhendusaurabh/draughts.js/issues"
-  },
-  "homepage": "https://github.com/shubhendusaurabh/draughts.js#readme"
+  }
 }
