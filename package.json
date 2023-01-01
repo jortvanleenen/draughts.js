@@ -1,6 +1,6 @@
 {
-  "name": "draughts",
-  "version": "0.1.0",
+  "name": "@jortvl/draughts",
+  "version": "0.1.2",
   "description": "A draughts(/checkers) engine, without AI computer component.",
   "keywords": [
     "checkers",
@@ -30,7 +30,7 @@
     "url": "https://www.patreon.com/jortvanleenen"
   },
   "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
-  "main": "draughts.js",
+  "main": "src/draughts.js",
   "dependencies": {},
   "devDependencies": {
     "mocha": "*",
@@ -38,7 +38,7 @@
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha ./tests.js",
-    "minify": "./node_modules/.bin/uglifyjs draughts.js -c -m --comments 'license' > draughts.min.js"
+    "test": "mocha test/tests.js",
+    "prepublish": "uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
   }
 }
