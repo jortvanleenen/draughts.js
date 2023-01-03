@@ -14,7 +14,8 @@
       "ClassDeclaration",
       "NewExpression",
       "FunctionDeclaration",
-      "CallExpression"
+      "CallExpression",
+      "Property"
     ]
   },
   "rules": {
@@ -33,7 +34,13 @@
     "no-duplicate-imports": "error",
     "no-self-compare": "warn",
     "no-unreachable-loop": "error",
-    "no-use-before-define": "error",
-    "snakecasejs/snakecasejs": "error"
+    "no-use-before-define": [
+      "error",
+      {
+        "functions": false
+      }
+    ],
+    "snakecasejs/snakecasejs": "error",
+    "capitalized-comments": "error"
   }
 }

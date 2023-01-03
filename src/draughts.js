@@ -63,7 +63,7 @@
 const Draughts = function (fen) {
   const BLACK = 'B';
   const WHITE = 'W';
-  // var EMPTY = -1
+  // TODO, refactor: var EMPTY = -1
   const MAN = 'b';
   const KING = 'w';
   const SYMBOLS = 'bwBW';
@@ -120,7 +120,7 @@ const Draughts = function (fen) {
       states = [];
     }
     header = {};
-    update_setup(generate_fen());
+    update_setup(generateFen());
   }
 
   function reset() {
@@ -131,68 +131,68 @@ const Draughts = function (fen) {
     // TODO for default fen
     if (!fen || fen === DEFAULT_FEN) {
       position = DEFAULT_POSITION_INTERNAL;
-      update_setup(generate_fen(position));
+      update_setup(generateFen(position));
       return true;
     }
     // fen_constants(dimension) //TODO for empty fens
 
-    var checkedFen = validate_fen(fen);
-    if (!checkedFen.valid) {
-      console.error('Fen Error', fen, checkedFen);
+    const validated_fen = validateFen(fen);
+    if (!validated_fen.valid) {
+      console.error('Fen Error', fen, validated_fen);
       return false;
     }
     if (position) {
       clear();
     }
 
-    // remove spaces
+    // Remove spaces
     fen = fen.replace(/\s+/g, '');
-    // remove suffixes
+    // Remove suffixes
     fen.replace(/\..*$/, '');
 
-    var tokens = fen.split(':');
-    // which side to move
-    turn = tokens[0].substr(0, 1);
+    const tokens = fen.split(':');
+    // Which side to move
+    turn = tokens[0][0];
 
     // var positions = new Array()
-    var externalPosition = DEFAULT_POSITION_EXTERNAL;
-    for (var i = 1; i <= externalPosition.length; i++) {
-      externalPosition = setCharAt(externalPosition, i, 0);
+    var external_position = DEFAULT_POSITION_EXTERNAL;
+    for (var i = 1; i <= external_position.length; i++) {
+      external_position = setCharAt(external_position, i, 0);
     }
-    externalPosition = setCharAt(externalPosition, 0, turn);
+    external_position = setCharAt(external_position, 0, turn);
     // TODO refactor
     for (var k = 1; k <= 2; k++) {
       // TODO called twice
       var color = tokens[k].substr(0, 1);
-      var sideString = tokens[k].substr(1);
-      if (sideString.length === 0) continue;
-      var numbers = sideString.split(',');
+      var side_string = tokens[k].substr(1);
+      if (side_string.length === 0) continue;
+      var numbers = side_string.split(',');
       for (i = 0; i < numbers.length; i++) {
-        var numSquare = numbers[i];
-        var isKing = (numSquare.substr(0, 1) === 'K');
-        numSquare = (isKing === true ? numSquare.substr(1) : numSquare); // strip K
-        var range = numSquare.split('-');
+        var square_number = numbers[i];
+        var is_king = (square_number.substr(0, 1) === 'K');
+        square_number = (is_king === true ? square_number.substr(1) : square_number); // strip K
+        var range = square_number.split('-');
         if (range.length === 2) {
           var from = parseInt(range[0], 10);
           var to = parseInt(range[1], 10);
           for (var j = from; j <= to; j++) {
-            externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()));
+            external_position = setCharAt(external_position, j, (is_king === true ? color.toUpperCase() : color.toLowerCase()));
           }
         } else {
-          numSquare = parseInt(numSquare, 10);
-          externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()));
+          square_number = parseInt(square_number, 10);
+          external_position = setCharAt(external_position, square_number, (is_king === true ? color.toUpperCase() : color.toLowerCase()));
         }
       }
     }
 
-    position = convertPosition(externalPosition, 'internal');
-    update_setup(generate_fen(position));
+    position = convertPosition(external_position, 'internal');
+    update_setup(generateFen(position));
 
     return true;
   }
 
-  function validate_fen(fen) {
-    var errors = [
+  function validateFen(fen) {
+    const errors = [
       {
         code: 0,
         message: 'no errors'
@@ -251,25 +251,25 @@ const Draughts = function (fen) {
       return {valid: false, error: errors[1], fen: fen};
     }
 
-    // fen should be 3 sections separated by colons
+    // Fen should be 3 sections separated by colons
     var parts = fen.split(':');
     if (parts.length !== 3) {
       return {valid: false, error: errors[2], fen: fen};
     }
 
-    //  which side to move
+    // Which side to move
     var turnColor = parts[0];
     if (turnColor !== 'B' && turnColor !== 'W' && turnColor !== '?') {
       return {valid: false, error: errors[3], fen: fen};
     }
 
-    // check colors of both sides
+    // Check colors of both sides
     var colors = parts[1].substr(0, 1) + parts[2].substr(0, 1);
     if (colors !== 'BW' && colors !== 'WB') {
       return {valid: false, error: errors[4], fen: fen};
     }
 
-    // check parts for both sides
+    // Check parts for both sides
     for (var k = 1; k <= 2; k += 1) {
       var sideString = parts[k].substr(1); // Stripping color
       if (sideString.length === 0) {
@@ -308,7 +308,7 @@ const Draughts = function (fen) {
     return {valid: true, error_number: 0, error: errors[0]};
   }
 
-  function generate_fen() {
+  function generateFen() {
     var black = [];
     var white = [];
     var externalPosition = convertPosition(position, 'external');
@@ -333,48 +333,44 @@ const Draughts = function (fen) {
     return turn.toUpperCase() + ':W' + white.join(',') + ':B' + black.join(',');
   }
 
-  function generatePDN(options) {
+  function generatePdn(options) {
     // for html usage {maxWidth: 72, newline_char: "<br />"}
     var newline = (typeof options === 'object' && typeof options.newline_char === 'string')
       ? options.newline_char : '\n';
-    var maxWidth = (typeof options === 'object' && typeof options.maxWidth === 'number')
-      ? options.maxWidth : 0;
-    var result = [];
-    var headerExists = false;
+    let result = [];
 
-    for (var i in header) {
+    let header_exists = false;
+    for (let i in header) {
       result.push('[' + i + ' "' + header[i] + '"]' + newline);
-      headerExists = true;
+      header_exists = true;
     }
 
-    if (headerExists && history.length) {
+    if (header_exists && history.length) {
       result.push(newline);
     }
-
-    var tempHistory = clone(history);
-
-    var moves = [];
-    var moveString = '';
-    var moveNumber = 1;
-
-    while (tempHistory.length > 0) {
-      var move = tempHistory.shift();
+    let temp_history = history.copy;
+    let temporary_history = clone(history);
+    let move_string = '';
+    let move_number = 1;
+    while (temporary_history.length > 0) {
+      let move = temporary_history.shift();
       if (move.turn === 'W') {
-        moveString += moveNumber + '. ';
+        move_string += move_number + '. ';
       }
-      moveString += move.move.from;
+      move_string += move.move.from;
       if (move.move.flags === 'c') {
-        moveString += 'x';
+        move_string += 'x';
       } else {
-        moveString += '-';
+        move_string += '-';
       }
-      moveString += move.move.to;
-      moveString += ' ';
-      moveNumber += 1;
+      move_string += move.move.to;
+      move_string += ' ';
+      move_number += 1;
     }
 
-    if (moveString.length) {
-      moves.push(moveString);
+    let moves = [];
+    if (move_string.length) {
+      moves.push(move_string);
     }
 
     // TODO resutl from pdn or header??
@@ -382,25 +378,27 @@ const Draughts = function (fen) {
       moves.push(header.Result);
     }
 
-    if (maxWidth === 0) {
+    const max_width = (typeof options === 'object' && typeof options.maxWidth === 'number')
+      ? options.maxWidth : 0;
+    if (max_width === 0) {
       return result.join('') + moves.join(' ');
     }
 
-    var currentWidth = 0;
-    for (i = 0; i < moves.length; i++) {
-      if (currentWidth + moves[i].length > maxWidth && i !== 0) {
+    let current_width = 0;
+    for (let i = 0; i < moves.length; i++) {
+      if (current_width + moves[i].length > max_width && i !== 0) {
         if (result[result.length - 1] === ' ') {
           result.pop();
         }
 
         result.push(newline);
-        currentWidth = 0;
+        current_width = 0;
       } else if (i !== 0) {
         result.push(' ');
-        currentWidth++;
+        current_width++;
       }
       result.push(' ');
-      currentWidth += moves[i].length;
+      current_width += moves[i].length;
     }
 
     return result.join('');
@@ -435,7 +433,7 @@ const Draughts = function (fen) {
     }
   }
 
-  function parsePDN(pdn, options) {
+  function parsePdn(pdn, options) {
     var newline_char = (typeof options === 'object' &&
       typeof options.newline_char === 'string')
       ? options.newline_char : '\r?\n';
@@ -559,7 +557,7 @@ const Draughts = function (fen) {
           tempMove.flags = FLAGS.CAPTURE;
           tempMove.captures = moves[i].takes;
           tempMove.takes = moves[i].takes;
-          tempMove.piecesCaptured = moves[i].piecesTaken;
+          tempMove.pieces_captured = moves[i].pieces_taken;
         }
         return tempMove;
       }
@@ -577,7 +575,7 @@ const Draughts = function (fen) {
     if (move.takes && move.takes.length) {
       move.flags = FLAGS.CAPTURE;
       move.captures = move.takes;
-      move.piecesCaptured = move.piecesTaken;
+      move.pieces_captured = move.pieces_taken;
       for (var i = 0; i < move.takes.length; i++) {
         position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0);
       }
@@ -603,17 +601,17 @@ const Draughts = function (fen) {
   }
 
   function put(piece, square) {
-    // check for valid piece string
+    // Check for valid piece string
     if (SYMBOLS.match(piece) === null) {
       return false;
     }
 
-    // check for valid square
+    // Check for valid square
     if (outsideBoard(convertNumber(square, 'internal')) === true) {
       return false;
     }
     position = setCharAt(position, convertNumber(square, 'internal'), piece);
-    let current_fen = generate_fen();
+    let current_fen = generateFen();
     states.push(current_fen);
     update_setup(current_fen);
 
@@ -623,11 +621,11 @@ const Draughts = function (fen) {
   function remove(square) {
     var piece = get(square);
     position = setCharAt(position, convertNumber(square, 'internal'), 0);
-    let current_fen = generate_fen();
+    let current_fen = generateFen();
     if (current_fen in states) {
       delete states[current_fen];
     }
-    update_setup(generate_fen());
+    update_setup(generateFen());
 
     return piece;
   }
@@ -653,21 +651,21 @@ const Draughts = function (fen) {
     return move;
   }
 
-  function generate_moves(square) {
-    var moves = [];
+  function generateMoves(square) {
+    let moves = [];
 
     if (square) {
       moves = getLegalMoves(square.square);
     } else {
-      var tempCaptures = getCaptures();
+      let all_captures = getCaptures();
       // TODO change to be applicable to array
-      if (tempCaptures.length) {
-        for (var i = 0; i < tempCaptures.length; i++) {
-          tempCaptures[i].flags = FLAGS.CAPTURE;
-          tempCaptures[i].captures = tempCaptures[i].jumps;
-          tempCaptures[i].piecesCaptured = tempCaptures[i].piecesTaken;
+      if (all_captures.length) {
+        for (let i = 0; i < all_captures.length; i++) {
+          all_captures[i].flags = FLAGS.CAPTURE;
+          all_captures[i].captures = all_captures[i].jumps;
+          all_captures[i].pieces_captured = all_captures[i].pieces_taken;
         }
-        return tempCaptures;
+        return all_captures;
       }
       moves = getMoves();
     }
@@ -685,7 +683,7 @@ const Draughts = function (fen) {
       var captures = capturesAtSquare(index, {position: position, dirFrom: ''}, {
         jumps: [index],
         takes: [],
-        piecesTaken: []
+        pieces_taken: []
       });
 
       captures = longestCapture(captures);
@@ -735,7 +733,7 @@ const Draughts = function (fen) {
           const str = direction_strings[dir];
 
           const match_array = str.match(/^0/); // e.g. b0 w0
-          if (match_array !== null && validDir(piece, dir) === true) {
+          if (match_array !== null && isValidDiskDirection(piece, dir) === true) {
             const position_to = position_from + STEPS[dir];
             const move_object =
               {from: position_from, to: position_to, takes: [], jumps: []};
@@ -772,13 +770,13 @@ const Draughts = function (fen) {
     let captures = [];
     for (let i = 0; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
-        var posFrom = i;
-        var state = {position: position, dirFrom: ''};
-        var capture = {jumps: [], takes: [], from: posFrom, to: '', piecesTaken: []};
-        capture.jumps[0] = posFrom;
-        var tempCaptures = capturesAtSquare(posFrom, state, capture);
-        if (tempCaptures.length) {
-          captures = captures.concat(convertMoves(tempCaptures, 'external'));
+        const position_from = i;
+        const state = {position: position, dirFrom: ''};
+        const capture = {jumps: [], takes: [], from: position_from, to: '', pieces_taken: []};
+        capture.jumps[0] = position_from;
+        const possible_captures = capturesAtSquare(position_from, state, capture);
+        if (possible_captures.length) {
+          captures = captures.concat(convertMoves(possible_captures, 'external'));
         }
       }
     }
@@ -808,7 +806,7 @@ const Draughts = function (fen) {
         case 'b':
         case 'w':
           var matchArray = str.match(/^[wW]0|^[bB]0/); // matches: w0, W0, B0, b0
-          if (matchArray !== null && piece !== matchArray[0].charAt(0)) {
+          if (matchArray !== null && piece !== matchArray[0].charAt(0).toLowerCase()) {
             var posTo = posFrom + (2 * STEPS[dir]);
             var posTake = posFrom + (1 * STEPS[dir]);
             if (capture.takes.indexOf(posTake) > -1) {
@@ -818,10 +816,10 @@ const Draughts = function (fen) {
             updateCapture.to = posTo;
             updateCapture.jumps.push(posTo);
             updateCapture.takes.push(posTake);
-            updateCapture.piecesTaken.push(position.charAt(posTake));
+            updateCapture.pieces_taken.push(position.charAt(posTake));
             updateCapture.from = posFrom;
             var updateState = clone(state);
-            updateState.dirFrom = oppositeDir(dir);
+            updateState.dirFrom = getOppositeDirection(dir);
             var pieceCode = updateState.position.charAt(posFrom);
             updateState.position = setCharAt(updateState.position, posFrom, 0);
             updateState.position = setCharAt(updateState.position, posTo, pieceCode);
@@ -832,7 +830,7 @@ const Draughts = function (fen) {
         case 'B':
         case 'W':
           matchArray = str.match(/^0*[wW]0+|^0*[bB]0+/); // matches: 00w000, B00
-          if (matchArray !== null && piece !== matchArray[0].match(/[wWbB]/)[0].charAt(0)) {
+          if (matchArray !== null && piece !== matchArray[0].match(/[wWbB]/)[0].charAt(0).toUpperCase()) {
             var matchStr = matchArray[0];
             var matchArraySubstr = matchStr.match(/[wW]0+$|[bB]0+$/); // matches: w000, B00
             var matchSubstr = matchArraySubstr[0];
@@ -847,10 +845,10 @@ const Draughts = function (fen) {
               updateCapture.jumps.push(posTo);
               updateCapture.to = posTo;
               updateCapture.takes.push(posTake);
-              updateCapture.piecesTaken.push(position.charAt(posTake));
+              updateCapture.pieces_taken.push(position.charAt(posTake));
               updateCapture.posFrom = posFrom;
               updateState = clone(state);
-              updateState.dirFrom = oppositeDir(dir);
+              updateState.dirFrom = getOppositeDirection(dir);
               pieceCode = updateState.position.charAt(posFrom);
               updateState.position = setCharAt(updateState.position, posFrom, 0);
               updateState.position = setCharAt(updateState.position, posTo, pieceCode);
@@ -881,9 +879,9 @@ const Draughts = function (fen) {
     history.push({
       move: move,
       turn: turn,
-      moveNumber: number_of_moves
+      move_number: number_of_moves
     });
-    states.push(generate_fen());
+    states.push(generateFen());
   }
 
   function undoMove() {
@@ -893,15 +891,15 @@ const Draughts = function (fen) {
       return null;
     }
 
-    var move = old.move;
+    const move = old.move;
     turn = old.turn;
-    number_of_moves = old.moveNumber;
+    number_of_moves = old.move_number;
 
     position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece);
     position = setCharAt(position, convertNumber(move.to, 'internal'), 0);
     if (move.flags === 'c') {
-      for (var i = 0; i < move.captures.length; i += 1) {
-        position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i]);
+      for (let i = 0; i < move.captures.length; i++) {
+        position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.pieces_captured[i]);
       }
     } else if (move.flags === 'p') {
       position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase());
@@ -909,70 +907,67 @@ const Draughts = function (fen) {
     return move;
   }
 
-  function get_disambiguator(move) {
-
-  }
+  // TODO?
+  // function get_disambiguator(move) {
+  //
+  // }
 
   function swap_color(c) {
     return c === WHITE ? BLACK : WHITE;
   }
 
   function isInteger(int) {
-    var regex = /^\d+$/;
-    if (regex.test(int)) {
-      return true;
-    } else {
-      return false;
-    }
+    const regex = /^\d+$/;
+    return regex.test(int);
   }
 
   function longestCapture(captures) {
-    var maxJumpCount = 0;
-    for (var i = 0; i < captures.length; i++) {
-      var jumpCount = captures[i].jumps.length;
-      if (jumpCount > maxJumpCount) {
-        maxJumpCount = jumpCount;
+    let longest_jump_count = 0;
+    for (let i = 0; i < captures.length; i++) {
+      const current_jump_count = captures[i].jumps.length;
+      if (current_jump_count > longest_jump_count) {
+        longest_jump_count = current_jump_count;
       }
     }
 
-    var selectedCaptures = [];
-    if (maxJumpCount < 2) {
-      return selectedCaptures;
+    let allowed_captures = [];
+    if (longest_jump_count < 2) {
+      return allowed_captures;
     }
 
-    for (i = 0; i < captures.length; i++) {
-      if (captures[i].jumps.length === maxJumpCount) {
-        selectedCaptures.push(captures[i]);
+    for (let i = 0; i < captures.length; i++) {
+      if (captures[i].jumps.length === longest_jump_count) {
+        allowed_captures.push(captures[i]);
       }
     }
-    return selectedCaptures;
+    return allowed_captures;
   }
 
   function convertMoves(moves, type) {
-    var tempMoves = [];
+    let converted_moves = [];
     if (!type || moves.length === 0) {
-      return tempMoves;
+      return converted_moves;
     }
-    for (var i = 0; i < moves.length; i++) {
-      var moveObject = {jumps: [], takes: []};
-      moveObject.from = convertNumber(moves[i].from, type);
-      for (var j = 0; j < moves[i].jumps.length; j++) {
-        moveObject.jumps[j] = convertNumber(moves[i].jumps[j], type);
+    for (let i = 0; i < moves.length; i++) {
+      let move_object = {jumps: [], takes: []};
+      move_object.from = convertNumber(moves[i].from, type);
+      for (let j = 0; j < moves[i].jumps.length; j++) {
+        move_object.jumps[j] = convertNumber(moves[i].jumps[j], type);
       }
-      for (j = 0; j < moves[i].takes.length; j++) {
-        moveObject.takes[j] = convertNumber(moves[i].takes[j], type);
+      for (let j = 0; j < moves[i].takes.length; j++) {
+        move_object.takes[j] = convertNumber(moves[i].takes[j], type);
       }
-      moveObject.to = convertNumber(moves[i].to, type);
-      moveObject.piecesTaken = moves[i].piecesTaken;
-      tempMoves.push(moveObject);
+      move_object.to = convertNumber(moves[i].to, type);
+      move_object.pieces_taken = moves[i].pieces_taken;
+      converted_moves.push(move_object);
     }
-    return tempMoves;
+    return converted_moves;
   }
 
-  function convertNumber(number, notation) {
-    var num = parseInt(number, 10);
-    var result;
-    switch (notation) {
+  function convertNumber(number, wanted_notation) {
+    const num = parseInt(number, 10);
+    let result;
+    switch (wanted_notation) {
       case 'internal':
         result = num + Math.floor((num - 1) / 10);
         break;
@@ -980,117 +975,112 @@ const Draughts = function (fen) {
         result = num - Math.floor((num - 1) / 11);
         break;
       default:
-        result = num;
+        throw new Error('convertNumber - Unknown notation: ' + wanted_notation);
     }
     return result;
   }
 
-  function convertPosition(position, notation) {
-    var sub1, sub2, sub3, sub4, sub5, newPosition;
-    switch (notation) {
+  /**
+   * Convert an internal position to an external position or vice versa.
+   *
+   * @pre position its notation is valid and not equal to the wanted notation
+   * @param position the position to convert
+   * @param wanted_notation the wanted notation ('internal' or 'external')
+   * @returns {*}
+   * @since 1.0.0
+   */
+  function convertPosition(position, wanted_notation) {
+    // Internal e.g.: '-bbbbbbbbbb-bbbbbbbbbb-0000000000-wwwwwwwwww-wwwwwwwwww-'
+    // External e.g.: 'Wbbbbbbbbbbbbbbbbbbbb0000000000wwwwwwwwwwwwwwwwwwww'
+    let converted_position;
+    switch (wanted_notation) {
       case 'internal':
-        sub1 = position.substr(1, 10);
-        sub2 = position.substr(11, 10);
-        sub3 = position.substr(21, 10);
-        sub4 = position.substr(31, 10);
-        sub5 = position.substr(41, 10);
-        newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-' + sub5 + '-';
+        // Internal notation does not keep track of the turn
+        position = position.substring(1);
+        converted_position = '-' + position.replace(/(.{10})/g, '$1-');
         break;
       case 'external':
-        sub1 = position.substr(1, 10);
-        sub2 = position.substr(12, 10);
-        sub3 = position.substr(23, 10);
-        sub4 = position.substr(34, 10);
-        sub5 = position.substr(45, 10);
-        newPosition = '?' + sub1 + sub2 + sub3 + sub4 + sub5;
+        converted_position = turn + position.replace(/-/g, '');
         break;
       default:
-        newPosition = position;
+        throw new Error('convertPosition Unknown notation: ' + wanted_notation);
     }
-    return newPosition;
+    return converted_position;
   }
 
   function outsideBoard(square) {
-    // internal notation only
-    var n = parseInt(square, 10);
-    if (n >= 0 && n <= 55 && (n % 11) !== 0) {
-      return false;
-    } else {
-      return true;
-    }
+    // Internal notation only
+    const n = parseInt(square, 10);
+    return !(n >= 0 && n <= 55 && (n % 11) !== 0);
   }
 
 // -W0000000b0-0000000000-0000000000-0000000000-0000000000-, 1, 2
-  function directionStrings(tempPosition, square, maxLength) {
+  function directionStrings(current_position, square, max_length) {
     // Create direction strings for square at position (internal representation)
     // Output object with four directions as properties (four rhumbs).
     // Each property has a string as value representing the pieces in that direction.
     // Piece of the given square is part of each string.
     // Example of output: {NE: 'b0', SE: 'b00wb00', SW: 'bbb00', NW: 'bb'}
-    // Strings have maximum length of given maxLength.
+    // Strings have maximum length of given max_length.
     if (arguments.length === 2) {
-      maxLength = 100;
+      max_length = 100;
     }
 
     if (outsideBoard(square) === true) {
       return 334;
     }
 
-    let dirStrings = {};
+    let direction_strings = {};
     for (const [dir, offset] of Object.entries(STEPS)) {
-      let dirArray = [];
+      let direction_array = [];
       let index = square + offset;
-      while (!outsideBoard(index) && dirArray.length < maxLength) {
-        dirArray.push(tempPosition.charAt(index));
+      while (!outsideBoard(index) && direction_array.length < max_length) {
+        direction_array.push(current_position.charAt(index));
         index += offset;
       }
 
-      dirStrings[dir] = dirArray.join('');
+      direction_strings[dir] = direction_array.join('');
     }
 
-    return dirStrings;
+    return direction_strings;
   }
 
-  function oppositeDir(direction) {
-    var opposite = {NE: 'SW', SE: 'NW', SW: 'NE', NW: 'SE'};
-    return opposite[direction];
+  function getOppositeDirection(direction) {
+    return {NE: 'SW', SE: 'NW', SW: 'NE', NW: 'SE'}[direction];
   }
 
-  function validDir(piece, dir) {
-    var validDirs = {};
-    validDirs.w = {NE: true, SE: false, SW: false, NW: true};
-    validDirs.b = {NE: false, SE: true, SW: true, NW: false};
-    return validDirs[piece][dir];
+  function isValidDiskDirection(piece, dir) {
+    return (piece === 'b' && dir[0] === 'S' || piece === 'w' && dir[0] === 'N');
   }
 
   function ascii(unicode) {
-    var extPosition = convertPosition(position, 'external');
-    var s = '\n+-------------------------------+\n';
-    var i = 1;
-    for (var row = 1; row <= 10; row++) {
-      s += '|\t';
+    const external_position = convertPosition(position, 'external');
+    let output = '\n+-------------------------------+\n';
+    let position_index = 1;
+    for (let row = 1; row <= 10; row++) {
+      output += '|\t';
       if (row % 2 !== 0) {
-        s += '  ';
+        output += '  ';
       }
-      for (var col = 1; col <= 10; col++) {
+      for (let col = 1; col <= 10; col++) {
         if (col % 2 === 0) {
-          s += '  ';
-          i++;
+          output += '  ';
+          position_index++;
         } else {
           if (unicode) {
-            s += ' ' + UNICODES[extPosition[i]];
+            output += ' ' + UNICODES[external_position[position_index]];
           } else {
-            s += ' ' + extPosition[i];
+            output += ' ' + external_position[position_index];
           }
         }
       }
       if (row % 2 === 0) {
-        s += '  ';
+        output += '  ';
       }
-      s += '\t|\n';
+      output += '\t|\n';
     }
-    s += '+-------------------------------+\n';
-    return s;
+    output += '+-------------------------------+\n';
+    return output;
   }
 
   function inThreefoldRepetition() {
@@ -1115,29 +1105,29 @@ const Draughts = function (fen) {
       return true;
     }
     // First check if any piece left
-    for (var i = 0; i < position.length; i++) {
+    for (let i = 0; i < position.length; i++) {
       if (position[i].toLowerCase() === turn.toLowerCase()) {
-        // if no moves left or in three fold repetition game over
-        return generate_moves().length === 0;
+        // If no moves left or in threefold repetition game over
+        return generateMoves().length === 0;
       }
     }
     return true;
   }
 
   function getHistory(options) {
-    var tempHistory = clone(history);
-    var moveHistory = [];
-    var verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose);
-    while (tempHistory.length > 0) {
-      var move = tempHistory.shift();
+    let history_copy = clone(history);
+    let move_history = [];
+    const verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose);
+    while (history_copy.length > 0) {
+      const move = history_copy.shift();
       if (verbose) {
-        moveHistory.push(makePretty(move));
+        move_history.push(makePretty(move));
       } else {
-        moveHistory.push(move.move.from + SIGNS[move.move.flags] + move.move.to);
+        move_history.push(move.move.from + SIGNS[move.move.flags] + move.move.to);
       }
     }
 
-    return moveHistory;
+    return move_history;
   }
 
   function getPosition() {
@@ -1149,7 +1139,7 @@ const Draughts = function (fen) {
     move.from = ugly_move.move.from;
     move.to = ugly_move.move.to;
     move.flags = ugly_move.move.flags;
-    move.moveNumber = ugly_move.moveNumber;
+    move.move_number = ugly_move.move_number;
     move.piece = ugly_move.move.piece;
     if (move.flags === 'c') {
       move.captures = ugly_move.move.captures.join(',');
@@ -1158,8 +1148,7 @@ const Draughts = function (fen) {
   }
 
   function clone(obj) {
-    const dupe = JSON.parse(JSON.stringify(obj));
-    return dupe;
+    return JSON.parse(JSON.stringify(obj));
   }
 
   function trim(str) {
@@ -1168,7 +1157,7 @@ const Draughts = function (fen) {
 
   // TODO
   function perft(depth) {
-    const moves = generate_moves({legal: false});
+    const moves = generateMoves({legal: false});
     let nodes = 0;
 
     for (let i = 0; i < moves.length; i++) {
@@ -1197,11 +1186,9 @@ const Draughts = function (fen) {
       return load(fen);
     },
 
-    reset: function () {
-      return reset();
-    },
+    reset: reset,
 
-    moves: generate_moves,
+    moves: generateMoves,
 
     gameOver: gameOver,
 
@@ -1209,16 +1196,17 @@ const Draughts = function (fen) {
       return false;
     },
 
-    validate_fen: validate_fen,
+    validateFen: validateFen,
 
-    fen: generate_fen,
+    fen: generateFen,
 
-    pdn: generatePDN,
+    pdn: generatePdn,
 
-    load_pdn: function (pdn, options) {
-    },
+    // TODO: make loading a pdn possible
+    // LoadPdn: function (pdn, options) {
+    // },
 
-    parsePDN: parsePDN,
+    parsePdn: parsePdn,
 
     header: function () {
       return set_header(arguments);
@@ -1249,7 +1237,7 @@ const Draughts = function (fen) {
         return false;
       }
 
-      let moves = generate_moves();
+      let moves = generateMoves();
       for (let i = 0; i < moves.length; i++) {
         if ((to === moves[i].to) && (from === moves[i].from)) {
           makeMove(moves[i]);
@@ -1300,9 +1288,9 @@ const Draughts = function (fen) {
 
     directionStrings: directionStrings,
 
-    oppositeDir: oppositeDir,
+    getOppositeDirection: getOppositeDirection,
 
-    validDir: validDir,
+    isValidDiskDirection: isValidDiskDirection,
 
     position: getPosition,
 
@@ -1316,12 +1304,4 @@ const Draughts = function (fen) {
   };
 };
 
-if (typeof exports !== 'undefined') {
-  exports.Draughts = Draughts;
-}
-
-if (typeof define !== 'undefined') {
-  define(function () {
-    return Draughts;
-  });
-}
+module.exports.Draughts = Draughts;
