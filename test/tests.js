@@ -1,9 +1,64 @@
-// if (typeof require != "undefined") {
-//   var chai = require('chai');
-//   var Draughts = require('../src/draughts').Draughts;
-// }
-//
-// var assert = chai.assert;
+/**
+ * Very rudimentary test suite, as the API is very likely to change.
+ * Ensures basic functionality should work.
+ *
+ * @file
+ */
+let chai;
+let Draughts;
+let assert;
+if (typeof require !== 'undefined') {
+  chai = require('chai');
+  Draughts = require('../src/draughts').Draughts;
+  assert = chai.assert;
+}
+
+describe('Game creation', () => {
+  const draughts = new Draughts();
+
+  it('Should start with white turn', () => {
+    assert.equal(draughts.turn(), 'w');
+  });
+
+  it('Should start with 20 white pieces', () => {
+    let count = 0;
+    for (let i = 0; i < draughts.position().length; i++) {
+      if (draughts.position()[i] === 'w') {
+        count++;
+      }
+    }
+
+    assert.equal(count, 20);
+  });
+
+  it('Should start with 20 black pieces', () => {
+    let count = 0;
+    for (let i = 0; i < draughts.position().length; i++) {
+      if (draughts.position()[i] === 'b') {
+        count++;
+      }
+    }
+
+    assert.equal(count, 20);
+  });
+
+  it('Should give the proper moves for white', () => {
+    const proper_moves = [
+      {jumps: [], takes: [], from: 31, to: 27, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 31, to: 26, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 32, to: 28, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 32, to: 27, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 33, to: 29, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 33, to: 28, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 34, to: 30, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 34, to: 29, piecesTaken: undefined},
+      {jumps: [], takes: [], from: 35, to: 30, piecesTaken: undefined}
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_moves);
+  });
+});
+
 //
 // describe("Perft", function() {
 //   var perfts = [
