@@ -31,18 +31,20 @@
   },
   "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
   "main": "src/draughts.js",
+  "unpkg": "dist/draughts.min.js",
   "files": [
     "src",
     "dist",
     "test",
     ".gitignore",
-    ".jshintrc",
+    ".eslintrc.json",
     "README.md"
   ],
-  "dependencies": {},
   "devDependencies": {
-    "mocha": "*",
     "chai": "*",
+    "eslint": "^8.31.0",
+    "eslint-plugin-snakecasejs": "^2.2.0",
+    "mocha": "*",
     "uglify-js": "*"
   },
   "scripts": {

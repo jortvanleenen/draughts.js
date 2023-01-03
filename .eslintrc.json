@@ -1,0 +1,39 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true,
+    "es6": true
+  },
+  "extends": "eslint:recommended",
+  "plugins": [
+    "snakecasejs"
+  ],
+  "settings": {
+    "snakecasejs/filter": [
+      "ClassDeclaration",
+      "NewExpression",
+      "FunctionDeclaration",
+      "CallExpression"
+    ]
+  },
+  "rules": {
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-var": "error",
+    "quotes": [
+      "error",
+      "single",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "no-duplicate-imports": "error",
+    "no-self-compare": "warn",
+    "no-unreachable-loop": "error",
+    "no-use-before-define": "error",
+    "snakecasejs/snakecasejs": "error"
+  }
+}
