@@ -60,131 +60,135 @@
 ||
 ||==================================================================================
 */
-var Draughts = function (fen) {
-  var BLACK = 'B'
-  var WHITE = 'W'
+const Draughts = function (fen) {
+  const BLACK = 'B';
+  const WHITE = 'W';
   // var EMPTY = -1
-  var MAN = 'b'
-  var KING = 'w'
-  var SYMBOLS = 'bwBW'
-  var DEFAULT_FEN = 'W:W31-50:B1-20'
-  var position
-  var DEFAULT_POSITION_INTERNAL = '-bbbbbbbbbb-bbbbbbbbbb-0000000000-wwwwwwwwww-wwwwwwwwww-'
-  var DEFAULT_POSITION_EXTERNAL = 'Wbbbbbbbbbbbbbbbbbbbb0000000000wwwwwwwwwwwwwwwwwwww'
-  var STEPS = {NE: -5, SE: 6, SW: 5, NW: -6}
-  var POSSIBLE_RESULTS = ['2-0', '0-2', '1-1', '0-0', '*', '1-0', '0-1']
-  var FLAGS = {
-    NORMAL: 'n',
-    CAPTURE: 'c',
+  const MAN = 'b';
+  const KING = 'w';
+  const SYMBOLS = 'bwBW';
+  const DEFAULT_FEN = 'W:W31-50:B1-20';
+  let position;
+  const DEFAULT_POSITION_INTERNAL = '-bbbbbbbbbb-bbbbbbbbbb-0000000000-wwwwwwwwww-wwwwwwwwww-';
+  const DEFAULT_POSITION_EXTERNAL = 'Wbbbbbbbbbbbbbbbbbbbb0000000000wwwwwwwwwwwwwwwwwwww';
+  const STEPS = {NE: -5, SE: 6, SW: 5, NW: -6};
+  const POSSIBLE_RESULTS = ['2-0', '0-2', '1-1', '0-0', '*', '1-0', '0-1'];
+  const FLAGS = {
+    NORMAL: 'n', CAPTURE: 'c',
     PROMOTION: 'p'
-  }
+  };
 
-  var UNICODES = {
+  const UNICODES = {
     'w': '\u26C0',
     'b': '\u26C2',
     'B': '\u26C3',
     'W': '\u26C1',
     '0': '\u0020\u0020'
-  }
+  };
 
-  var SIGNS = {
+  const SIGNS = {
     n: '-',
     c: 'x'
-  }
-  var BITS = {
+  };
+
+  const BITS = {
     NORMAL: 1,
     CAPTURE: 2,
     PROMOTION: 4
-  }
+  };
 
-  var turn = WHITE
-  var moveNumber = 1
-  var history = [];
-  var header = {};
+  let turn = WHITE;
+  let number_of_moves = 1;
+  let history = [];
+  let header = {};
   let states = [];
 
   if (!fen) {
-    position = DEFAULT_POSITION_INTERNAL
-    load(DEFAULT_FEN)
+    position = DEFAULT_POSITION_INTERNAL;
+    load(DEFAULT_FEN);
   } else {
-    position = DEFAULT_POSITION_INTERNAL
-    load(fen)
+    position = DEFAULT_POSITION_INTERNAL;
+    load(fen);
   }
 
-  function clear() {
-    position = DEFAULT_POSITION_INTERNAL
-    turn = WHITE
-    moveNumber = 1
-    history = []
-    header = {}
-    update_setup(generate_fen())
+  function clear(remove_states = true) {
+    position = DEFAULT_POSITION_INTERNAL;
+    turn = WHITE;
+    number_of_moves = 1;
+    history = [];
+    if (remove_states) {
+      states = [];
+    }
+    header = {};
+    update_setup(generate_fen());
   }
 
   function reset() {
-    load(DEFAULT_FEN)
+    load(DEFAULT_FEN);
   }
 
   function load(fen) {
     // TODO for default fen
     if (!fen || fen === DEFAULT_FEN) {
-      position = DEFAULT_POSITION_INTERNAL
-      update_setup(generate_fen(position))
-      return true
+      position = DEFAULT_POSITION_INTERNAL;
+      update_setup(generate_fen(position));
+      return true;
     }
     // fen_constants(dimension) //TODO for empty fens
 
-    var checkedFen = validate_fen(fen)
+    var checkedFen = validate_fen(fen);
     if (!checkedFen.valid) {
-      console.error('Fen Error', fen, checkedFen)
-      return false
+      console.error('Fen Error', fen, checkedFen);
+      return false;
     }
-
-    clear()
+    if (position) {
+      clear();
+    }
 
     // remove spaces
-    fen = fen.replace(/\s+/g, '')
+    fen = fen.replace(/\s+/g, '');
     // remove suffixes
-    fen.replace(/\..*$/, '')
+    fen.replace(/\..*$/, '');
 
-    var tokens = fen.split(':')
+    var tokens = fen.split(':');
     // which side to move
-    turn = tokens[0].substr(0, 1)
+    turn = tokens[0].substr(0, 1);
 
     // var positions = new Array()
-    var externalPosition = DEFAULT_POSITION_EXTERNAL
+    var externalPosition = DEFAULT_POSITION_EXTERNAL;
     for (var i = 1; i <= externalPosition.length; i++) {
-      externalPosition = setCharAt(externalPosition, i, 0)
+      externalPosition = setCharAt(externalPosition, i, 0);
     }
-    externalPosition = setCharAt(externalPosition, 0, turn)
+    externalPosition = setCharAt(externalPosition, 0, turn);
     // TODO refactor
     for (var k = 1; k <= 2; k++) {
       // TODO called twice
-      var color = tokens[k].substr(0, 1)
-      var sideString = tokens[k].substr(1)
-      if (sideString.length === 0) continue
-      var numbers = sideString.split(',')
+      var color = tokens[k].substr(0, 1);
+      var sideString = tokens[k].substr(1);
+      if (sideString.length === 0) continue;
+      var numbers = sideString.split(',');
       for (i = 0; i < numbers.length; i++) {
-        var numSquare = numbers[i]
-        var isKing = (numSquare.substr(0, 1) === 'K')
-        numSquare = (isKing === true ? numSquare.substr(1) : numSquare) // strip K
-        var range = numSquare.split('-')
+        var numSquare = numbers[i];
+        var isKing = (numSquare.substr(0, 1) === 'K');
+        numSquare = (isKing === true ? numSquare.substr(1) : numSquare); // strip K
+        var range = numSquare.split('-');
         if (range.length === 2) {
-          var from = parseInt(range[0], 10)
-          var to = parseInt(range[1], 10)
+          var from = parseInt(range[0], 10);
+          var to = parseInt(range[1], 10);
           for (var j = from; j <= to; j++) {
-            externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
+            externalPosition = setCharAt(externalPosition, j, (isKing === true ? color.toUpperCase() : color.toLowerCase()));
           }
         } else {
-          numSquare = parseInt(numSquare, 10)
-          externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()))
+          numSquare = parseInt(numSquare, 10);
+          externalPosition = setCharAt(externalPosition, numSquare, (isKing === true ? color.toUpperCase() : color.toLowerCase()));
         }
       }
     }
 
-    position = convertPosition(externalPosition, 'internal')
-    update_setup(generate_fen(position))
+    position = convertPosition(externalPosition, 'internal');
+    update_setup(generate_fen(position));
 
-    return true
+    return true;
   }
 
   function validate_fen(fen) {
@@ -225,190 +229,190 @@ var Draughts = function (fen) {
         code: 8,
         message: 'empty fen position'
       }
-    ]
+    ];
 
     if (typeof fen !== 'string') {
-      return {valid: false, error: errors[0], fen: fen}
+      return {valid: false, error: errors[0], fen: fen};
     }
 
-    fen = fen.replace(/\s+/g, '')
+    fen = fen.replace(/\s+/g, '');
 
     if (fen === 'B::' || fen === 'W::' || fen === '?::') {
-      return {valid: true, fen: fen + ':B:W'} // exception allowed i.e. empty fen
+      return {valid: true, fen: fen + ':B:W'}; // exception allowed i.e. empty fen
     }
-    fen = fen.trim()
-    fen = fen.replace(/\..*$/, '')
+    fen = fen.trim();
+    fen = fen.replace(/\..*$/, '');
 
     if (fen === '') {
-      return {valid: false, error: errors[7], fen: fen}
+      return {valid: false, error: errors[7], fen: fen};
     }
 
     if (fen.substr(1, 1) !== ':') {
-      return {valid: false, error: errors[1], fen: fen}
+      return {valid: false, error: errors[1], fen: fen};
     }
 
     // fen should be 3 sections separated by colons
-    var parts = fen.split(':')
+    var parts = fen.split(':');
     if (parts.length !== 3) {
-      return {valid: false, error: errors[2], fen: fen}
+      return {valid: false, error: errors[2], fen: fen};
     }
 
     //  which side to move
-    var turnColor = parts[0]
+    var turnColor = parts[0];
     if (turnColor !== 'B' && turnColor !== 'W' && turnColor !== '?') {
-      return {valid: false, error: errors[3], fen: fen}
+      return {valid: false, error: errors[3], fen: fen};
     }
 
     // check colors of both sides
-    var colors = parts[1].substr(0, 1) + parts[2].substr(0, 1)
+    var colors = parts[1].substr(0, 1) + parts[2].substr(0, 1);
     if (colors !== 'BW' && colors !== 'WB') {
-      return {valid: false, error: errors[4], fen: fen}
+      return {valid: false, error: errors[4], fen: fen};
     }
 
     // check parts for both sides
     for (var k = 1; k <= 2; k += 1) {
-      var sideString = parts[k].substr(1) // Stripping color
+      var sideString = parts[k].substr(1); // Stripping color
       if (sideString.length === 0) {
-        continue
+        continue;
       }
-      var numbers = sideString.split(',')
+      var numbers = sideString.split(',');
       for (var i = 0; i < numbers.length; i++) {
-        var numSquare = numbers[i]
-        var isKing = (numSquare.substr(0, 1) === 'K')
-        numSquare = (isKing === true ? numSquare.substr(1) : numSquare)
-        var range = numSquare.split('-')
+        var numSquare = numbers[i];
+        var isKing = (numSquare.substr(0, 1) === 'K');
+        numSquare = (isKing === true ? numSquare.substr(1) : numSquare);
+        var range = numSquare.split('-');
         if (range.length === 2) {
           if (isInteger(range[0]) === false) {
-            return {valid: false, error: errors[5], fen: fen, range: range[0]}
+            return {valid: false, error: errors[5], fen: fen, range: range[0]};
           }
           if (!(range[0] >= 1 && range[0] <= 100)) {
-            return {valid: false, error: errors[6], fen: fen}
+            return {valid: false, error: errors[6], fen: fen};
           }
           if (isInteger(range[1]) === false) {
-            return {valid: false, error: errors[5], fen: fen}
+            return {valid: false, error: errors[5], fen: fen};
           }
           if (!(range[1] >= 1 && range[1] <= 100)) {
-            return {valid: false, error: errors[6], fen: fen}
+            return {valid: false, error: errors[6], fen: fen};
           }
         } else {
           if (isInteger(numSquare) === false) {
-            return {valid: false, error: errors[5], fen: fen}
+            return {valid: false, error: errors[5], fen: fen};
           }
           if (!(numSquare >= 1 && numSquare <= 100)) {
-            return {valid: false, error: errors[6], fen: fen}
+            return {valid: false, error: errors[6], fen: fen};
           }
         }
       }
     }
 
-    return {valid: true, error_number: 0, error: errors[0]}
+    return {valid: true, error_number: 0, error: errors[0]};
   }
 
   function generate_fen() {
-    var black = []
-    var white = []
-    var externalPosition = convertPosition(position, 'external')
+    var black = [];
+    var white = [];
+    var externalPosition = convertPosition(position, 'external');
     for (var i = 0; i < externalPosition.length; i++) {
       switch (externalPosition[i]) {
         case 'w':
-          white.push(i)
-          break
+          white.push(i);
+          break;
         case 'W':
-          white.push('K' + i)
-          break
+          white.push('K' + i);
+          break;
         case 'b':
-          black.push(i)
-          break
+          black.push(i);
+          break;
         case 'B':
-          black.push('K' + i)
-          break
+          black.push('K' + i);
+          break;
         default:
-          break
+          break;
       }
     }
-    return turn.toUpperCase() + ':W' + white.join(',') + ':B' + black.join(',')
+    return turn.toUpperCase() + ':W' + white.join(',') + ':B' + black.join(',');
   }
 
   function generatePDN(options) {
     // for html usage {maxWidth: 72, newline_char: "<br />"}
     var newline = (typeof options === 'object' && typeof options.newline_char === 'string')
-      ? options.newline_char : '\n'
+      ? options.newline_char : '\n';
     var maxWidth = (typeof options === 'object' && typeof options.maxWidth === 'number')
-      ? options.maxWidth : 0
-    var result = []
-    var headerExists = false
+      ? options.maxWidth : 0;
+    var result = [];
+    var headerExists = false;
 
     for (var i in header) {
-      result.push('[' + i + ' "' + header[i] + '"]' + newline)
-      headerExists = true
+      result.push('[' + i + ' "' + header[i] + '"]' + newline);
+      headerExists = true;
     }
 
     if (headerExists && history.length) {
-      result.push(newline)
+      result.push(newline);
     }
 
-    var tempHistory = clone(history)
+    var tempHistory = clone(history);
 
-    var moves = []
-    var moveString = ''
-    var moveNumber = 1
+    var moves = [];
+    var moveString = '';
+    var moveNumber = 1;
 
     while (tempHistory.length > 0) {
-      var move = tempHistory.shift()
+      var move = tempHistory.shift();
       if (move.turn === 'W') {
-        moveString += moveNumber + '. '
+        moveString += moveNumber + '. ';
       }
-      moveString += move.move.from
+      moveString += move.move.from;
       if (move.move.flags === 'c') {
-        moveString += 'x'
+        moveString += 'x';
       } else {
-        moveString += '-'
+        moveString += '-';
       }
-      moveString += move.move.to
-      moveString += ' '
-      moveNumber += 1
+      moveString += move.move.to;
+      moveString += ' ';
+      moveNumber += 1;
     }
 
     if (moveString.length) {
-      moves.push(moveString)
+      moves.push(moveString);
     }
 
     // TODO resutl from pdn or header??
     if (typeof header.Result !== 'undefined') {
-      moves.push(header.Result)
+      moves.push(header.Result);
     }
 
     if (maxWidth === 0) {
-      return result.join('') + moves.join(' ')
+      return result.join('') + moves.join(' ');
     }
 
-    var currentWidth = 0
+    var currentWidth = 0;
     for (i = 0; i < moves.length; i++) {
       if (currentWidth + moves[i].length > maxWidth && i !== 0) {
         if (result[result.length - 1] === ' ') {
-          result.pop()
+          result.pop();
         }
 
-        result.push(newline)
-        currentWidth = 0
+        result.push(newline);
+        currentWidth = 0;
       } else if (i !== 0) {
-        result.push(' ')
-        currentWidth++
+        result.push(' ');
+        currentWidth++;
       }
-      result.push(' ')
-      currentWidth += moves[i].length
+      result.push(' ');
+      currentWidth += moves[i].length;
     }
 
-    return result.join('')
+    return result.join('');
   }
 
   function set_header(args) {
     for (var i = 0; i < args.length; i += 2) {
       if (typeof args[i] === 'string' && typeof args[i + 1] === 'string') {
-        header[args[i]] = args[i + 1]
+        header[args[i]] = args[i + 1];
       }
     }
-    return header
+    return header;
   }
 
   /* called when the initial board setup is changed with put() or remove().
@@ -419,210 +423,213 @@ var Draughts = function (fen) {
    */
   function update_setup(fen) {
     if (history.length > 0) {
-      return false
+      return false;
     }
     if (fen !== DEFAULT_FEN) {
-      header['SetUp'] = '1'
-      header['FEN'] = fen
+      header['SetUp'] = '1';
+      header['FEN'] = fen;
       states.push(fen);
     } else {
-      delete header['SetUp']
-      delete header['FEN']
+      delete header['SetUp'];
+      delete header['FEN'];
     }
   }
 
   function parsePDN(pdn, options) {
     var newline_char = (typeof options === 'object' &&
       typeof options.newline_char === 'string')
-      ? options.newline_char : '\r?\n'
+      ? options.newline_char : '\r?\n';
     var regex = new RegExp('^(\\[(.|' + mask(newline_char) + ')*\\])' +
       '(' + mask(newline_char) + ')*' +
-      '1.(' + mask(newline_char) + '|.)*$', 'g')
+      '1.(' + mask(newline_char) + '|.)*$', 'g');
 
     function mask(str) {
-      return str.replace(/\\/g, '\\')
+      return str.replace(/\\/g, '\\');
     }
 
     function parsePDNHeader(header, options) {
-      var headerObj = {}
-      var headers = header.split(new RegExp(mask(newline_char)))
-      var key = ''
-      var value = ''
+      var headerObj = {};
+      var headers = header.split(new RegExp(mask(newline_char)));
+      var key = '';
+      var value = '';
 
       for (var i = 0; i < headers.length; i++) {
-        key = headers[i].replace(/^\[([A-Z][A-Za-z]*)\s.*\]$/, '$1')
-        value = headers[i].replace(/^\[[A-Za-z]+\s"(.*)"\]$/, '$1')
+        key = headers[i].replace(/^\[([A-Z][A-Za-z]*)\s.*\]$/, '$1');
+        value = headers[i].replace(/^\[[A-Za-z]+\s"(.*)"\]$/, '$1');
         if (trim(key).length > 0) {
-          headerObj[key] = value
+          headerObj[key] = value;
         }
       }
 
-      return headerObj
+      return headerObj;
     }
 
-    var headerString = pdn.replace(regex, '$1')
+    var headerString = pdn.replace(regex, '$1');
     if (headerString[0] !== '[') {
-      headerString = ''
+      headerString = '';
     }
 
-    reset()
+    reset();
 
-    var headers = parsePDNHeader(headerString, options)
+    var headers = parsePDNHeader(headerString, options);
 
     for (var key in headers) {
-      set_header([key, headers[key]])
+      set_header([key, headers[key]]);
     }
 
     if (headers['Setup'] === '1') {
       if (!(('FEN' in headers) && load(headers['FEN']))) {
-        console.error('fen invalid')
-        return false
+        console.error('fen invalid');
+        return false;
       }
     } else {
-      position = DEFAULT_POSITION_INTERNAL
+      position = DEFAULT_POSITION_INTERNAL;
     }
 
     /* delete header to get the moves */
-    var ms = pdn.replace(headerString, '').replace(new RegExp(mask(newline_char), 'g'), ' ')
+    var ms = pdn.replace(headerString, '').replace(new RegExp(mask(newline_char), 'g'), ' ');
 
     /* delete comments */
-    ms = ms.replace(/(\{[^}]+\})+?/g, '')
+    ms = ms.replace(/(\{[^}]+\})+?/g, '');
 
     /* delete recursive annotation variations */
-    var rav_regex = /(\([^\(\)]+\))+?/g
+    var rav_regex = /(\([^\(\)]+\))+?/g;
     while (rav_regex.test(ms)) {
-      ms = ms.replace(rav_regex, '')
+      ms = ms.replace(rav_regex, '');
     }
 
     /* delete move numbers */
     // TODO not working for move numbers with space
-    ms = ms.replace(/\d+\./g, '')
+    ms = ms.replace(/\d+\./g, '');
 
     /* delete ... indicating black to move */
-    ms = ms.replace(/\.\.\./g, '')
+    ms = ms.replace(/\.\.\./g, '');
 
     /* trim and get array of moves */
-    var moves = trim(ms).split(new RegExp(/\s+/))
+    var moves = trim(ms).split(new RegExp(/\s+/));
 
     /* delete empty entries */
-    moves = moves.join(',').replace(/,,+/g, ',').split(',')
+    moves = moves.join(',').replace(/,,+/g, ',').split(',');
 
-    var move = ''
+    var move = '';
     for (var half_move = 0; half_move < moves.length - 1; half_move += 1) {
-      move = getMoveObject(moves[half_move])
+      move = getMoveObject(moves[half_move]);
       if (!move) {
-        return false
+        return false;
       } else {
-        makeMove(move)
+        makeMove(move);
       }
     }
 
-    var result = moves[moves.length - 1]
+    var result = moves[moves.length - 1];
     if (POSSIBLE_RESULTS.indexOf(result) > -1) {
       if (headers['Result'] === 'undefined') {
-        set_header(['Result', result])
+        set_header(['Result', result]);
       }
     } else {
-      move = getMoveObject(result)
+      move = getMoveObject(result);
       if (!move) {
-        return false
+        return false;
       } else {
-        makeMove(move)
+        makeMove(move);
       }
     }
-    return true
+    return true;
   }
 
   function getMoveObject(move) {
     // TODO move flags for both capture and promote??
-    var tempMove = {}
-    var matches = move.split(/[x|-]/)
-    tempMove.from = parseInt(matches[0], 10)
-    tempMove.to = parseInt(matches[1], 10)
-    var moveType = move.match(/[x|-]/)[0]
+    var tempMove = {};
+    var matches = move.split(/[x|-]/);
+    tempMove.from = parseInt(matches[0], 10);
+    tempMove.to = parseInt(matches[1], 10);
+    var moveType = move.match(/[x|-]/)[0];
     if (moveType === '-') {
-      tempMove.flags = FLAGS.NORMAL
+      tempMove.flags = FLAGS.NORMAL;
     } else {
-      tempMove.flags = FLAGS.CAPTURE
+      tempMove.flags = FLAGS.CAPTURE;
     }
-    tempMove.piece = position.charAt(convertNumber(tempMove.from, 'internal'))
-    var moves = getLegalMoves(tempMove.from)
-    moves = convertMoves(moves, 'external')
+    tempMove.piece = position.charAt(convertNumber(tempMove.from, 'internal'));
+    var moves = getLegalMoves(tempMove.from);
+    moves = convertMoves(moves, 'external');
     // if move legal then make move
     for (var i = 0; i < moves.length; i += 1) {
       if (tempMove.to === moves[i].to && tempMove.from === moves[i].from) {
         if (moves[i].takes.length > 0) {
-          tempMove.flags = FLAGS.CAPTURE
-          tempMove.captures = moves[i].takes
-          tempMove.takes = moves[i].takes
-          tempMove.piecesCaptured = moves[i].piecesTaken
+          tempMove.flags = FLAGS.CAPTURE;
+          tempMove.captures = moves[i].takes;
+          tempMove.takes = moves[i].takes;
+          tempMove.piecesCaptured = moves[i].piecesTaken;
         }
-        return tempMove
+        return tempMove;
       }
     }
-    console.log(moves, tempMove)
-    return false
+    console.log(moves, tempMove);
+    return false;
   }
 
   function makeMove(move) {
-    move.piece = position.charAt(convertNumber(move.from, 'internal'))
-    position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece)
-    position = setCharAt(position, convertNumber(move.from, 'internal'), 0)
-    move.flags = FLAGS.NORMAL
+    move.piece = position.charAt(convertNumber(move.from, 'internal'));
+    position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece);
+    position = setCharAt(position, convertNumber(move.from, 'internal'), 0);
+    move.flags = FLAGS.NORMAL;
     // TODO refactor to either takes or capture
     if (move.takes && move.takes.length) {
-      move.flags = FLAGS.CAPTURE
-      move.captures = move.takes
-      move.piecesCaptured = move.piecesTaken
+      move.flags = FLAGS.CAPTURE;
+      move.captures = move.takes;
+      move.piecesCaptured = move.piecesTaken;
       for (var i = 0; i < move.takes.length; i++) {
-        position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0)
+        position = setCharAt(position, convertNumber(move.takes[i], 'internal'), 0);
       }
     }
     // Promoting piece here
     if (move.to <= 5 && move.piece === 'w') {
-      move.flags = FLAGS.PROMOTION
-      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
+      move.flags = FLAGS.PROMOTION;
+      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase());
     } else if (move.to >= 46 && move.piece === 'b') {
-      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase())
+      position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase());
     }
-    push(move)
+
     if (turn === BLACK) {
-      moveNumber += 1
+      number_of_moves += 1;
     }
-    turn = swap_color(turn)
+    turn = swap_color(turn);
+    push(move);
   }
 
   function get(square) {
-    var piece = position.charAt(convertNumber(square, 'internal'))
-    return piece
+    var piece = position.charAt(convertNumber(square, 'internal'));
+    return piece;
   }
 
   function put(piece, square) {
     // check for valid piece string
     if (SYMBOLS.match(piece) === null) {
-      return false
+      return false;
     }
 
     // check for valid square
     if (outsideBoard(convertNumber(square, 'internal')) === true) {
-      return false
+      return false;
     }
-    position = setCharAt(position, convertNumber(square, 'internal'), piece)
-    update_setup(generate_fen())
+    position = setCharAt(position, convertNumber(square, 'internal'), piece);
+    let current_fen = generate_fen();
+    states.push(current_fen);
+    update_setup(current_fen);
 
-    return true
+    return true;
   }
 
   function remove(square) {
-    var piece = get(square)
-    position = setCharAt(position, convertNumber(square, 'internal'), 0)
+    var piece = get(square);
+    position = setCharAt(position, convertNumber(square, 'internal'), 0);
     let current_fen = generate_fen();
     if (current_fen in states) {
       delete states[current_fen];
     }
-    update_setup(generate_fen())
+    update_setup(generate_fen());
 
-    return piece
+    return piece;
   }
 
   function build_move(board, from, to, flags, promotion) {
@@ -632,129 +639,132 @@ var Draughts = function (fen) {
       to: to,
       flags: flags,
       piece: board[from].type
-    }
+    };
 
     if (promotion) {
-      move.flags |= BITS.PROMOTION
+      move.flags |= BITS.PROMOTION;
     }
 
     if (board[to]) {
-      move.captured = board[to].type
+      move.captured = board[to].type;
     } else if (flags & BITS.CAPTURE) {
-      move.captured = MAN
+      move.captured = MAN;
     }
-    return move
+    return move;
   }
 
   function generate_moves(square) {
-    var moves = []
+    var moves = [];
 
     if (square) {
-      moves = getLegalMoves(square.square)
+      moves = getLegalMoves(square.square);
     } else {
-      var tempCaptures = getCaptures()
+      var tempCaptures = getCaptures();
       // TODO change to be applicable to array
       if (tempCaptures.length) {
         for (var i = 0; i < tempCaptures.length; i++) {
-          tempCaptures[i].flags = FLAGS.CAPTURE
-          tempCaptures[i].captures = tempCaptures[i].jumps
-          tempCaptures[i].piecesCaptured = tempCaptures[i].piecesTaken
+          tempCaptures[i].flags = FLAGS.CAPTURE;
+          tempCaptures[i].captures = tempCaptures[i].jumps;
+          tempCaptures[i].piecesCaptured = tempCaptures[i].piecesTaken;
         }
-        return tempCaptures
+        return tempCaptures;
       }
-      moves = getMoves()
+      moves = getMoves();
     }
     // TODO returns [] for on hovering for square no
-    moves = [].concat.apply([], moves)
-    return moves
+    moves = [].concat.apply([], moves);
+    return moves;
   }
 
   function getLegalMoves(index) {
-    var legalMoves
-    index = parseInt(index, 10)
+    var legalMoves;
+    index = parseInt(index, 10);
     if (!Number.isNaN(index)) {
-      index = convertNumber(index, 'internal')
+      index = convertNumber(index, 'internal');
 
       var captures = capturesAtSquare(index, {position: position, dirFrom: ''}, {
         jumps: [index],
         takes: [],
         piecesTaken: []
-      })
+      });
 
-      captures = longestCapture(captures)
-      legalMoves = captures
+      captures = longestCapture(captures);
+      legalMoves = captures;
       if (captures.length === 0) {
-        legalMoves = movesAtSquare(index)
+        legalMoves = movesAtSquare(index);
       }
     }
     // TODO called on hover ??
-    return convertMoves(legalMoves, 'external')
+    return convertMoves(legalMoves, 'external');
   }
 
-  function getMoves(index) {
-    var moves = []
-    var us = turn
+  function getMoves() {
+    let moves = [];
+    const us = turn;
 
-    for (var i = 1; i < position.length; i++) {
+    for (let i = 1; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
-        var tempMoves = movesAtSquare(i)
-        if (tempMoves.length) {
-          moves = moves.concat(convertMoves(tempMoves, 'external'))
+        let temp_moves = movesAtSquare(i);
+        if (temp_moves.length) {
+          moves = moves.concat(convertMoves(temp_moves, 'external'));
         }
       }
     }
-    return moves
+    return moves;
   }
 
   function setCharAt(position, idx, chr) {
-    idx = parseInt(idx, 10)
+    idx = parseInt(idx, 10);
     if (idx > position.length - 1) {
-      return position.toString()
+      return position.toString();
     } else {
-      return position.substr(0, idx) + chr + position.substr(idx + 1)
+      return position.substr(0, idx) + chr + position.substr(idx + 1);
     }
   }
 
   function movesAtSquare(square) {
-    var moves = []
-    var posFrom = square
-    var piece = position.charAt(posFrom)
+    let moves = [];
+    const position_from = square;
+    const piece = position.charAt(position_from);
     // console.trace(piece, square, 'movesAtSquare')
     switch (piece) {
       case 'b':
-      case 'w':
-        var dirStrings = directionStrings(position, posFrom, 2)
-        for (var dir in dirStrings) {
-          var str = dirStrings[dir]
+      case 'w': {
+        const direction_strings = directionStrings(position, position_from, 2);
+        for (const dir in direction_strings) {
+          const str = direction_strings[dir];
 
-          var matchArray = str.match(/^[bw]0/) // e.g. b0 w0
-          if (matchArray !== null && validDir(piece, dir) === true) {
-            var posTo = posFrom + STEPS[dir]
-            var moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
-            moves.push(moveObject)
+          const match_array = str.match(/^0/); // e.g. b0 w0
+          if (match_array !== null && validDir(piece, dir) === true) {
+            const position_to = position_from + STEPS[dir];
+            const move_object =
+              {from: position_from, to: position_to, takes: [], jumps: []};
+            moves.push(move_object);
           }
         }
-        break
+        break;
+      }
       case 'W':
-      case 'B':
-        dirStrings = directionStrings(position, posFrom)
-        for (dir in dirStrings) {
-          str = dirStrings[dir]
+      case 'B': {
+        const direction_strings = directionStrings(position, position_from);
+        for (const dir in direction_strings) {
+          const str = direction_strings[dir];
 
-          matchArray = str.match(/^0+/) // e.g. B000, W0
-          if (matchArray !== null) {
-            for (let i = 1; i <= matchArray[0].length; i++) {
-              posTo = posFrom + i * STEPS[dir]
-              moveObject = {from: posFrom, to: posTo, takes: [], jumps: []}
-              moves.push(moveObject)
+          const match_array = str.match(/^0+/); // e.g. B000, W0
+          if (match_array !== null) {
+            for (let i = 1; i <= match_array[0].length; i++) {
+              const position_to = position_from + i * STEPS[dir];
+              const move_object = {from: position_from, to: position_to, takes: [], jumps: []};
+              moves.push(move_object);
             }
           }
         }
-        break
+        break;
+      }
       default:
-        return moves
+        return moves;
     }
-    return moves
+    return moves;
   }
 
   function getCaptures() {
@@ -762,141 +772,141 @@ var Draughts = function (fen) {
     let captures = [];
     for (let i = 0; i < position.length; i++) {
       if (position[i] === us || position[i] === us.toLowerCase()) {
-        var posFrom = i
-        var state = {position: position, dirFrom: ''}
-        var capture = {jumps: [], takes: [], from: posFrom, to: '', piecesTaken: []}
-        capture.jumps[0] = posFrom
-        var tempCaptures = capturesAtSquare(posFrom, state, capture)
+        var posFrom = i;
+        var state = {position: position, dirFrom: ''};
+        var capture = {jumps: [], takes: [], from: posFrom, to: '', piecesTaken: []};
+        capture.jumps[0] = posFrom;
+        var tempCaptures = capturesAtSquare(posFrom, state, capture);
         if (tempCaptures.length) {
-          captures = captures.concat(convertMoves(tempCaptures, 'external'))
+          captures = captures.concat(convertMoves(tempCaptures, 'external'));
         }
       }
     }
-    captures = longestCapture(captures)
-    return captures
+    captures = longestCapture(captures);
+    return captures;
   }
 
   function capturesAtSquare(posFrom, state, capture) {
-    var piece = state.position.charAt(posFrom)
+    var piece = state.position.charAt(posFrom);
     if (piece !== 'b' && piece !== 'w' && piece !== 'B' && piece !== 'W') {
-      return [capture]
+      return [capture];
     }
-    var dirString
+    var dirString;
     if (piece === 'b' || piece === 'w') {
-      dirString = directionStrings(state.position, posFrom, 3)
+      dirString = directionStrings(state.position, posFrom, 2);
     } else {
-      dirString = directionStrings(state.position, posFrom)
+      dirString = directionStrings(state.position, posFrom);
     }
-    var finished = true
-    var captureArrayForDir = {}
+    var finished = true;
+    var captureArrayForDir = {};
     for (var dir in dirString) {
       if (dir === state.dirFrom) {
-        continue
+        continue;
       }
-      var str = dirString[dir]
+      var str = dirString[dir];
       switch (piece) {
         case 'b':
         case 'w':
-          var matchArray = str.match(/^[wW]0|^[bB]0/) // matches: w0, W0, B0, b0
+          var matchArray = str.match(/^[wW]0|^[bB]0/); // matches: w0, W0, B0, b0
           if (matchArray !== null && piece !== matchArray[0].charAt(0)) {
-            var posTo = posFrom + (2 * STEPS[dir])
-            var posTake = posFrom + (1 * STEPS[dir])
+            var posTo = posFrom + (2 * STEPS[dir]);
+            var posTake = posFrom + (1 * STEPS[dir]);
             if (capture.takes.indexOf(posTake) > -1) {
-              continue // capturing twice forbidden
+              continue; // capturing twice forbidden
             }
-            var updateCapture = clone(capture)
-            updateCapture.to = posTo
-            updateCapture.jumps.push(posTo)
-            updateCapture.takes.push(posTake)
-            updateCapture.piecesTaken.push(position.charAt(posTake))
-            updateCapture.from = posFrom
-            var updateState = clone(state)
-            updateState.dirFrom = oppositeDir(dir)
-            var pieceCode = updateState.position.charAt(posFrom)
-            updateState.position = setCharAt(updateState.position, posFrom, 0)
-            updateState.position = setCharAt(updateState.position, posTo, pieceCode)
-            finished = false
-            captureArrayForDir[dir] = capturesAtSquare(posTo, updateState, updateCapture)
+            var updateCapture = clone(capture);
+            updateCapture.to = posTo;
+            updateCapture.jumps.push(posTo);
+            updateCapture.takes.push(posTake);
+            updateCapture.piecesTaken.push(position.charAt(posTake));
+            updateCapture.from = posFrom;
+            var updateState = clone(state);
+            updateState.dirFrom = oppositeDir(dir);
+            var pieceCode = updateState.position.charAt(posFrom);
+            updateState.position = setCharAt(updateState.position, posFrom, 0);
+            updateState.position = setCharAt(updateState.position, posTo, pieceCode);
+            finished = false;
+            captureArrayForDir[dir] = capturesAtSquare(posTo, updateState, updateCapture);
           }
-          break
+          break;
         case 'B':
         case 'W':
-          matchArray = str.match(/^0*[wW]0+|^0*[bB]0+/) // matches: 00w000, B00
+          matchArray = str.match(/^0*[wW]0+|^0*[bB]0+/); // matches: 00w000, B00
           if (matchArray !== null && piece !== matchArray[0].match(/[wWbB]/)[0].charAt(0)) {
-            var matchStr = matchArray[0]
-            var matchArraySubstr = matchStr.match(/[wW]0+$|[bB]0+$/) // matches: w000, B00
-            var matchSubstr = matchArraySubstr[0]
-            var takeIndex = matchStr.length + 1 - matchSubstr.length // add 1 for current position
-            posTake = posFrom + (takeIndex * STEPS[dir])
+            var matchStr = matchArray[0];
+            var matchArraySubstr = matchStr.match(/[wW]0+$|[bB]0+$/); // matches: w000, B00
+            var matchSubstr = matchArraySubstr[0];
+            var takeIndex = matchStr.length + 1 - matchSubstr.length; // add 1 for current position
+            posTake = posFrom + (takeIndex * STEPS[dir]);
             if (capture.takes.indexOf(posTake) > -1) {
-              continue
+              continue;
             }
             for (var i = 1; i < matchSubstr.length; i++) {
-              posTo = posFrom + ((takeIndex + i) * STEPS[dir])
-              updateCapture = clone(capture)
-              updateCapture.jumps.push(posTo)
-              updateCapture.to = posTo
-              updateCapture.takes.push(posTake)
-              updateCapture.piecesTaken.push(position.charAt(posTake))
-              updateCapture.posFrom = posFrom
-              updateState = clone(state)
-              updateState.dirFrom = oppositeDir(dir)
-              pieceCode = updateState.position.charAt(posFrom)
-              updateState.position = setCharAt(updateState.position, posFrom, 0)
-              updateState.position = setCharAt(updateState.position, posTo, pieceCode)
-              finished = false
-              var dirIndex = dir + i.toString()
-              captureArrayForDir[dirIndex] = capturesAtSquare(posTo, updateState, updateCapture)
+              posTo = posFrom + ((takeIndex + i) * STEPS[dir]);
+              updateCapture = clone(capture);
+              updateCapture.jumps.push(posTo);
+              updateCapture.to = posTo;
+              updateCapture.takes.push(posTake);
+              updateCapture.piecesTaken.push(position.charAt(posTake));
+              updateCapture.posFrom = posFrom;
+              updateState = clone(state);
+              updateState.dirFrom = oppositeDir(dir);
+              pieceCode = updateState.position.charAt(posFrom);
+              updateState.position = setCharAt(updateState.position, posFrom, 0);
+              updateState.position = setCharAt(updateState.position, posTo, pieceCode);
+              finished = false;
+              var dirIndex = dir + i.toString();
+              captureArrayForDir[dirIndex] = capturesAtSquare(posTo, updateState, updateCapture);
             }
           }
-          break
+          break;
         default:
-          captureArrayForDir = []
+          captureArrayForDir = [];
       }
     }
-    var captureArray = []
+    var captureArray = [];
     if (finished === true && capture.takes.length) {
       // fix for mutiple capture
-      capture.from = capture.jumps[0]
-      captureArray[0] = capture
+      capture.from = capture.jumps[0];
+      captureArray[0] = capture;
     } else {
       for (dir in captureArrayForDir) {
-        captureArray = captureArray.concat(captureArrayForDir[dir])
+        captureArray = captureArray.concat(captureArrayForDir[dir]);
       }
     }
-    return captureArray
+    return captureArray;
   }
 
   function push(move) {
     history.push({
       move: move,
       turn: turn,
-      moveNumber: moveNumber
-    })
+      moveNumber: number_of_moves
+    });
     states.push(generate_fen());
   }
 
   function undoMove() {
-    let old = history.pop()
-    let oldState = states.pop()
+    let old = history.pop();
+    let oldState = states.pop();
     if (!old || !oldState) {
-      return null
+      return null;
     }
 
-    var move = old.move
-    turn = old.turn
-    moveNumber = old.moveNumber
+    var move = old.move;
+    turn = old.turn;
+    number_of_moves = old.moveNumber;
 
-    position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece)
-    position = setCharAt(position, convertNumber(move.to, 'internal'), 0)
+    position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece);
+    position = setCharAt(position, convertNumber(move.to, 'internal'), 0);
     if (move.flags === 'c') {
       for (var i = 0; i < move.captures.length; i += 1) {
-        position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i])
+        position = setCharAt(position, convertNumber(move.captures[i], 'internal'), move.piecesCaptured[i]);
       }
     } else if (move.flags === 'p') {
-      position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase())
+      position = setCharAt(position, convertNumber(move.from, 'internal'), move.piece.toLowerCase());
     }
-    return move
+    return move;
   }
 
   function get_disambiguator(move) {
@@ -904,109 +914,109 @@ var Draughts = function (fen) {
   }
 
   function swap_color(c) {
-    return c === WHITE ? BLACK : WHITE
+    return c === WHITE ? BLACK : WHITE;
   }
 
   function isInteger(int) {
-    var regex = /^\d+$/
+    var regex = /^\d+$/;
     if (regex.test(int)) {
-      return true
+      return true;
     } else {
-      return false
+      return false;
     }
   }
 
   function longestCapture(captures) {
-    var maxJumpCount = 0
+    var maxJumpCount = 0;
     for (var i = 0; i < captures.length; i++) {
-      var jumpCount = captures[i].jumps.length
+      var jumpCount = captures[i].jumps.length;
       if (jumpCount > maxJumpCount) {
-        maxJumpCount = jumpCount
+        maxJumpCount = jumpCount;
       }
     }
 
-    var selectedCaptures = []
+    var selectedCaptures = [];
     if (maxJumpCount < 2) {
-      return selectedCaptures
+      return selectedCaptures;
     }
 
     for (i = 0; i < captures.length; i++) {
       if (captures[i].jumps.length === maxJumpCount) {
-        selectedCaptures.push(captures[i])
+        selectedCaptures.push(captures[i]);
       }
     }
-    return selectedCaptures
+    return selectedCaptures;
   }
 
   function convertMoves(moves, type) {
-    var tempMoves = []
+    var tempMoves = [];
     if (!type || moves.length === 0) {
-      return tempMoves
+      return tempMoves;
     }
     for (var i = 0; i < moves.length; i++) {
-      var moveObject = {jumps: [], takes: []}
-      moveObject.from = convertNumber(moves[i].from, type)
+      var moveObject = {jumps: [], takes: []};
+      moveObject.from = convertNumber(moves[i].from, type);
       for (var j = 0; j < moves[i].jumps.length; j++) {
-        moveObject.jumps[j] = convertNumber(moves[i].jumps[j], type)
+        moveObject.jumps[j] = convertNumber(moves[i].jumps[j], type);
       }
       for (j = 0; j < moves[i].takes.length; j++) {
-        moveObject.takes[j] = convertNumber(moves[i].takes[j], type)
+        moveObject.takes[j] = convertNumber(moves[i].takes[j], type);
       }
-      moveObject.to = convertNumber(moves[i].to, type)
-      moveObject.piecesTaken = moves[i].piecesTaken
-      tempMoves.push(moveObject)
+      moveObject.to = convertNumber(moves[i].to, type);
+      moveObject.piecesTaken = moves[i].piecesTaken;
+      tempMoves.push(moveObject);
     }
-    return tempMoves
+    return tempMoves;
   }
 
   function convertNumber(number, notation) {
-    var num = parseInt(number, 10)
-    var result
+    var num = parseInt(number, 10);
+    var result;
     switch (notation) {
       case 'internal':
-        result = num + Math.floor((num - 1) / 10)
-        break
+        result = num + Math.floor((num - 1) / 10);
+        break;
       case 'external':
-        result = num - Math.floor((num - 1) / 11)
-        break
+        result = num - Math.floor((num - 1) / 11);
+        break;
       default:
-        result = num
+        result = num;
     }
-    return result
+    return result;
   }
 
   function convertPosition(position, notation) {
-    var sub1, sub2, sub3, sub4, sub5, newPosition
+    var sub1, sub2, sub3, sub4, sub5, newPosition;
     switch (notation) {
       case 'internal':
-        sub1 = position.substr(1, 10)
-        sub2 = position.substr(11, 10)
-        sub3 = position.substr(21, 10)
-        sub4 = position.substr(31, 10)
-        sub5 = position.substr(41, 10)
-        newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-' + sub5 + '-'
-        break
+        sub1 = position.substr(1, 10);
+        sub2 = position.substr(11, 10);
+        sub3 = position.substr(21, 10);
+        sub4 = position.substr(31, 10);
+        sub5 = position.substr(41, 10);
+        newPosition = '-' + sub1 + '-' + sub2 + '-' + sub3 + '-' + sub4 + '-' + sub5 + '-';
+        break;
       case 'external':
-        sub1 = position.substr(1, 10)
-        sub2 = position.substr(12, 10)
-        sub3 = position.substr(23, 10)
-        sub4 = position.substr(34, 10)
-        sub5 = position.substr(45, 10)
-        newPosition = '?' + sub1 + sub2 + sub3 + sub4 + sub5
-        break
+        sub1 = position.substr(1, 10);
+        sub2 = position.substr(12, 10);
+        sub3 = position.substr(23, 10);
+        sub4 = position.substr(34, 10);
+        sub5 = position.substr(45, 10);
+        newPosition = '?' + sub1 + sub2 + sub3 + sub4 + sub5;
+        break;
       default:
-        newPosition = position
+        newPosition = position;
     }
-    return newPosition
+    return newPosition;
   }
 
   function outsideBoard(square) {
     // internal notation only
-    var n = parseInt(square, 10)
+    var n = parseInt(square, 10);
     if (n >= 0 && n <= 55 && (n % 11) !== 0) {
-      return false
+      return false;
     } else {
-      return true
+      return true;
     }
   }
 
@@ -1042,48 +1052,48 @@ var Draughts = function (fen) {
   }
 
   function oppositeDir(direction) {
-    var opposite = {NE: 'SW', SE: 'NW', SW: 'NE', NW: 'SE'}
-    return opposite[direction]
+    var opposite = {NE: 'SW', SE: 'NW', SW: 'NE', NW: 'SE'};
+    return opposite[direction];
   }
 
   function validDir(piece, dir) {
-    var validDirs = {}
-    validDirs.w = {NE: true, SE: false, SW: false, NW: true}
-    validDirs.b = {NE: false, SE: true, SW: true, NW: false}
-    return validDirs[piece][dir]
+    var validDirs = {};
+    validDirs.w = {NE: true, SE: false, SW: false, NW: true};
+    validDirs.b = {NE: false, SE: true, SW: true, NW: false};
+    return validDirs[piece][dir];
   }
 
   function ascii(unicode) {
-    var extPosition = convertPosition(position, 'external')
-    var s = '\n+-------------------------------+\n'
-    var i = 1
+    var extPosition = convertPosition(position, 'external');
+    var s = '\n+-------------------------------+\n';
+    var i = 1;
     for (var row = 1; row <= 10; row++) {
-      s += '|\t'
+      s += '|\t';
       if (row % 2 !== 0) {
-        s += '  '
+        s += '  ';
       }
       for (var col = 1; col <= 10; col++) {
         if (col % 2 === 0) {
-          s += '  '
-          i++
+          s += '  ';
+          i++;
         } else {
           if (unicode) {
-            s += ' ' + UNICODES[extPosition[i]]
+            s += ' ' + UNICODES[extPosition[i]];
           } else {
-            s += ' ' + extPosition[i]
+            s += ' ' + extPosition[i];
           }
         }
       }
       if (row % 2 === 0) {
-        s += '  '
+        s += '  ';
       }
-      s += '\t|\n'
+      s += '\t|\n';
     }
-    s += '+-------------------------------+\n'
-    return s
+    s += '+-------------------------------+\n';
+    return s;
   }
 
-  function inThreeFoldRepition() {
+  function inThreefoldRepetition() {
     // Check if an element occurs three times in 'states' array:
     for (let i = 0; i < states.length; i++) {
       let count = 0;
@@ -1101,7 +1111,7 @@ var Draughts = function (fen) {
   }
 
   function gameOver() {
-    if (inThreeFoldRepition()) {
+    if (inThreefoldRepetition()) {
       return true;
     }
     // First check if any piece left
@@ -1111,68 +1121,68 @@ var Draughts = function (fen) {
         return generate_moves().length === 0;
       }
     }
-    return true
+    return true;
   }
 
   function getHistory(options) {
-    var tempHistory = clone(history)
-    var moveHistory = []
-    var verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose)
+    var tempHistory = clone(history);
+    var moveHistory = [];
+    var verbose = (typeof options !== 'undefined' && 'verbose' in options && options.verbose);
     while (tempHistory.length > 0) {
-      var move = tempHistory.shift()
+      var move = tempHistory.shift();
       if (verbose) {
-        moveHistory.push(makePretty(move))
+        moveHistory.push(makePretty(move));
       } else {
-        moveHistory.push(move.move.from + SIGNS[move.move.flags] + move.move.to)
+        moveHistory.push(move.move.from + SIGNS[move.move.flags] + move.move.to);
       }
     }
 
-    return moveHistory
+    return moveHistory;
   }
 
   function getPosition() {
-    return convertPosition(position, 'external')
+    return convertPosition(position, 'external');
   }
 
-  function makePretty(uglyMove) {
-    var move = {}
-    move.from = uglyMove.move.from
-    move.to = uglyMove.move.to
-    move.flags = uglyMove.move.flags
-    move.moveNumber = uglyMove.moveNumber
-    move.piece = uglyMove.move.piece
+  function makePretty(ugly_move) {
+    let move = {};
+    move.from = ugly_move.move.from;
+    move.to = ugly_move.move.to;
+    move.flags = ugly_move.move.flags;
+    move.moveNumber = ugly_move.moveNumber;
+    move.piece = ugly_move.move.piece;
     if (move.flags === 'c') {
-      move.captures = uglyMove.move.captures.join(',')
+      move.captures = ugly_move.move.captures.join(',');
     }
-    return move
+    return move;
   }
 
   function clone(obj) {
-    var dupe = JSON.parse(JSON.stringify(obj))
-    return dupe
+    const dupe = JSON.parse(JSON.stringify(obj));
+    return dupe;
   }
 
   function trim(str) {
-    return str.replace(/^\s+|\s+$/g, '')
+    return str.replace(/^\s+|\s+$/g, '');
   }
 
   // TODO
   function perft(depth) {
-    var moves = generate_moves({legal: false})
-    var nodes = 0
+    const moves = generate_moves({legal: false});
+    let nodes = 0;
 
-    for (var i = 0; i < moves.length; i++) {
-      makeMove(moves[i])
+    for (let i = 0; i < moves.length; i++) {
+      makeMove(moves[i]);
       if (depth - 1 > 0) {
-        var child_nodes = perft(depth - 1)
-        nodes += child_nodes
+        const child_nodes = perft(depth - 1);
+        nodes += child_nodes;
       } else {
-        nodes++
+        nodes++;
       }
-      undoMove()
+      undoMove();
     }
 
-    return nodes
+    return nodes;
   }
 
   return {
@@ -1184,11 +1194,11 @@ var Draughts = function (fen) {
     SQUARES: 'A8',
 
     load: function (fen) {
-      return load(fen)
+      return load(fen);
     },
 
     reset: function () {
-      return reset()
+      return reset();
     },
 
     moves: generate_moves,
@@ -1196,7 +1206,7 @@ var Draughts = function (fen) {
     gameOver: gameOver,
 
     inDraw: function () {
-      return false
+      return false;
     },
 
     validate_fen: validate_fen,
@@ -1211,38 +1221,42 @@ var Draughts = function (fen) {
     parsePDN: parsePDN,
 
     header: function () {
-      return set_header(arguments)
+      return set_header(arguments);
     },
 
     ascii: ascii,
 
     turn: function () {
-      return turn.toLowerCase()
+      return turn.toLowerCase();
     },
 
     move: function move(move) {
-      const delimiter = move.search(/-/);
-      if (typeof move.to === 'undefined' && typeof move.from === 'undefined'
-        && delimiter === -1) {
-        return false
-      }
       let to;
       let from;
-      if (delimiter !== -1) {
-        from = +move.substring(0, delimiter);
-        to = +move.substring(delimiter + 1, move.length);
+      if (typeof move === 'string' || move instanceof String) {
+        const delimiter = move.search(/-/);
+        if (delimiter !== -1) {
+          from = +move.substring(0, delimiter);
+          to = +move.substring(delimiter + 1, move.length);
+        } else {
+          return false;
+        }
+      } else if (typeof move.to !== 'undefined'
+        && typeof move.from !== 'undefined') {
+        to = +move.to;
+        from = +move.from;
       } else {
-        to = +move.to
-        from = +move.from
+        return false;
       }
-      let moves = generate_moves()
+
+      let moves = generate_moves();
       for (let i = 0; i < moves.length; i++) {
         if ((to === moves[i].to) && (from === moves[i].from)) {
-          makeMove(moves[i])
-          return moves[i]
+          makeMove(moves[i]);
+          return moves[i];
         }
       }
-      return false
+      return false;
     },
 
     getMoves: getMoves,
@@ -1250,28 +1264,28 @@ var Draughts = function (fen) {
     getLegalMoves: getLegalMoves,
 
     undo: function () {
-      var move = undoMove()
-      return move || null
+      const move = undoMove();
+      return move || null;
     },
 
     clear: function () {
-      return clear()
+      return clear();
     },
 
     put: function (piece, square) {
-      return put(piece, square)
+      return put(piece, square);
     },
 
     get: function (square) {
-      return get(square)
+      return get(square);
     },
 
     remove: function (square) {
-      return remove(square)
+      return remove(square);
     },
 
     perft: function (depth) {
-      return perft(depth)
+      return perft(depth);
     },
 
     history: getHistory,
@@ -1296,16 +1310,18 @@ var Draughts = function (fen) {
 
     makePretty: makePretty,
 
-    captures: getCaptures
-  }
-}
+    captures: getCaptures,
+
+    inThreefoldRepetition: inThreefoldRepetition
+  };
+};
 
 if (typeof exports !== 'undefined') {
-  exports.Draughts = Draughts
+  exports.Draughts = Draughts;
 }
 
 if (typeof define !== 'undefined') {
   define(function () {
-    return Draughts
-  })
+    return Draughts;
+  });
 }
