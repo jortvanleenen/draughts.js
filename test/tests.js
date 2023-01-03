@@ -44,19 +44,119 @@ describe('Game creation', () => {
 
   it('Should give the proper moves for white', () => {
     const proper_moves = [
-      {jumps: [], takes: [], from: 31, to: 27, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 31, to: 26, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 32, to: 28, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 32, to: 27, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 33, to: 29, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 33, to: 28, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 34, to: 30, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 34, to: 29, piecesTaken: undefined},
-      {jumps: [], takes: [], from: 35, to: 30, piecesTaken: undefined}
+      {jumps: [], takes: [], from: 31, to: 27, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 31, to: 26, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 32, to: 28, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 32, to: 27, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 33, to: 29, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 33, to: 28, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 34, to: 30, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 34, to: 29, pieces_taken: undefined},
+      {jumps: [], takes: [], from: 35, to: 30, pieces_taken: undefined}
     ];
 
     assert.deepEqual(draughts.moves(), proper_moves);
   });
+});
+
+describe('Game creation from FEN', () => {
+  it('Should be able to generate an empty board', () => {
+    const draughts = new Draughts('W:W:B');
+    assert.equal(draughts.position(),
+      'W00000000000000000000000000000000000000000000000000');
+  });
+
+  it('Should be able to create a complex board', () => {
+    const draughts = new Draughts('W:WK7,25,28,33,35,36,38,39,48,49:B3,9,13,14,17,19,23,24');
+    assert.equal(draughts.position(),
+      'W00b000W0b000bb00b0b000bbw00w0000w0ww0ww00000000ww0');
+  });
+});
+
+describe('Simple move and capture generation', () => {
+  it('Should be possible for w to capture b', () => {
+    const draughts = new Draughts('W:W28:B23');
+    const proper_move = [
+      {
+        jumps: [28, 19],
+        takes: [23],
+        from: 28,
+        to: 19,
+        pieces_taken: ['b'],
+        flags: 'c',
+        captures: [28, 19],
+        pieces_captured: ['b']
+      }
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_move);
+  });
+
+  it('Should be possible for w to capture B', () => {
+    const draughts = new Draughts('W:W28:BK23');
+    const proper_move = [
+      {
+        jumps: [28, 19],
+        takes: [23],
+        from: 28,
+        to: 19,
+        pieces_taken: ['B'],
+        flags: 'c',
+        captures: [28, 19],
+        pieces_captured: ['B']
+      }
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_move);
+  });
+
+  it('Should be possible for b to capture w', () => {
+    const draughts = new Draughts('B:W28:B23');
+    const proper_move = [
+      {
+        jumps: [23, 32],
+        takes: [28],
+        from: 23,
+        to: 32,
+        pieces_taken: ['w'],
+        flags: 'c',
+        captures: [23, 32],
+        pieces_captured: ['w']
+      }
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_move);
+  });
+
+  it('Should be possible for b to capture W', () => {
+    const draughts = new Draughts('B:WK23:B28');
+    const proper_move = [
+      {
+        jumps: [28, 19],
+        takes: [23],
+        from: 28,
+        to: 19,
+        pieces_taken: ['W'],
+        flags: 'c',
+        captures: [28, 19],
+        pieces_captured: ['W']
+      }
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_move);
+  });
+
+  it('Should not be possible for b to capture B', () => {
+    const draughts = new Draughts('B:WK1:B23,28');
+    const proper_moves = [
+      { jumps: [], takes: [], from: 23, to: 29, pieces_taken: undefined },
+      { jumps: [], takes: [], from: 28, to: 33, pieces_taken: undefined },
+      { jumps: [], takes: [], from: 28, to: 32, pieces_taken: undefined }
+    ];
+
+    assert.deepEqual(draughts.moves(), proper_moves);
+  });
+
 });
 
 //

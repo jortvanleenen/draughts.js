@@ -15,7 +15,8 @@
       "NewExpression",
       "FunctionDeclaration",
       "CallExpression",
-      "Property"
+      "Property",
+      "MemberExpression"
     ]
   },
   "rules": {
