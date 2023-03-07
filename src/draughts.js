@@ -454,8 +454,8 @@ const Draughts = function (fen) {
             let key = '';
             let value = '';
             for (const element of headers) {
-                key = element.replace(/^\[([A-Z][A-Za-z]*)\s.*]$/, '$1');
-                value = element.replace(/^\[[A-Za-z]+\s"(.*)"]$/, '$1');
+                key = element.match(/[A-Z]\w*/)[0];
+                value = element.match(/"(.*)"/)[1];
                 if (key.trim().length > 0) {
                     header_object[key] = value;
                 }
