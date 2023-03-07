@@ -528,46 +528,70 @@ const Draughts = function (fen) {
             moves.pop();
         }
 
-        let move_object = '';
-        for (const move of moves) {
-            move_object = getMoveObject(move);
-            if (!move_object) {
+        for (const m of moves) {
+            if (!move(m)) {
                 return false;
             }
-            makeMove(move_object);
         }
-
         return true;
     }
 
-    function getMoveObject(move) {
-        // TODO move flags for both capture and promote??
-        const temp_move = {};
-        const matches = move.split(/[x|-]/);
-        temp_move.from = parseInt(matches[0], 10);
-        temp_move.to = parseInt(matches[1], 10);
-        const move_type = move.match(/[x|-]/)[0];
-        if (move_type === '-') {
-            temp_move.flags = FLAGS.NORMAL;
+    // function getMoveObject(move) {
+    //     // TODO move flags for both capture and promote??
+    //     const temp_move = {};
+    //     const matches = move.split(/[x|-]/);
+    //     temp_move.from = parseInt(matches[0], 10);
+    //     temp_move.to = parseInt(matches[1], 10);
+    //     const move_type = move.match(/[x|-]/)[0];
+    //     if (move_type === '-') {
+    //         temp_move.flags = FLAGS.NORMAL;
+    //     } else {
+    //         temp_move.flags = FLAGS.CAPTURE;
+    //     }
+    //     temp_move.piece = position.charAt(convertNumber(temp_move.from, 'internal'));
+    //     let moves = getLegalMoves(temp_move.from);
+    //     moves = convertMoves(moves, 'external');
+    //     // If move legal then make move
+    //     for (const element of moves) {
+    //         if (temp_move.to === element.to && temp_move.from === element.from) {
+    //             if (element.takes.length > 0) {
+    //                 temp_move.flags = FLAGS.CAPTURE;
+    //                 temp_move.captures = element.takes;
+    //                 temp_move.takes = element.takes;
+    //                 temp_move.pieces_captured = element.pieces_taken;
+    //             }
+    //             return temp_move;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    function move(move) {
+        let to;
+        let from;
+        if (typeof move === 'string' || move instanceof String) {
+            const delimiter = move.search(/[-|x]/);
+            if (delimiter !== -1) {
+                from = +move.substring(0, delimiter);
+                to = +move.substring(delimiter + 1, move.length);
+            } else {
+                return false;
+            }
+        } else if (typeof move.to !== 'undefined'
+            && typeof move.from !== 'undefined') {
+            to = +move.to;
+            from = +move.from;
         } else {
-            temp_move.flags = FLAGS.CAPTURE;
+            return false;
         }
-        temp_move.piece = position.charAt(convertNumber(temp_move.from, 'internal'));
-        let moves = getLegalMoves(temp_move.from);
-        moves = convertMoves(moves, 'external');
-        // If move legal then make move
-        for (var i = 0; i < moves.length; i += 1) {
-            if (temp_move.to === moves[i].to && temp_move.from === moves[i].from) {
-                if (moves[i].takes.length > 0) {
-                    temp_move.flags = FLAGS.CAPTURE;
-                    temp_move.captures = moves[i].takes;
-                    temp_move.takes = moves[i].takes;
-                    temp_move.pieces_captured = moves[i].pieces_taken;
-                }
-                return temp_move;
+
+        let moves = generateMoves();
+        for (const element of moves) {
+            if ((to === element.to) && (from === element.from)) {
+                makeMove(element);
+                return element;
             }
         }
-        console.log(moves, temp_move);
         return false;
     }
 
@@ -665,10 +689,10 @@ const Draughts = function (fen) {
             let all_captures = getCaptures();
             // TODO change to be applicable to array
             if (all_captures.length) {
-                for (let i = 0; i < all_captures.length; i++) {
-                    all_captures[i].flags = FLAGS.CAPTURE;
-                    all_captures[i].captures = all_captures[i].jumps;
-                    all_captures[i].pieces_captured = all_captures[i].pieces_taken;
+                for (const capture of all_captures) {
+                    capture.flags = FLAGS.CAPTURE;
+                    capture.captures = capture.jumps;
+                    capture.pieces_captured = capture.pieces_taken;
                 }
                 return all_captures;
             }
@@ -1219,34 +1243,7 @@ const Draughts = function (fen) {
             return turn.toLowerCase();
         },
 
-        move: function move(move) {
-            let to;
-            let from;
-            if (typeof move === 'string' || move instanceof String) {
-                const delimiter = move.search(/-/);
-                if (delimiter !== -1) {
-                    from = +move.substring(0, delimiter);
-                    to = +move.substring(delimiter + 1, move.length);
-                } else {
-                    return false;
-                }
-            } else if (typeof move.to !== 'undefined'
-                && typeof move.from !== 'undefined') {
-                to = +move.to;
-                from = +move.from;
-            } else {
-                return false;
-            }
-
-            let moves = generateMoves();
-            for (let i = 0; i < moves.length; i++) {
-                if ((to === moves[i].to) && (from === moves[i].from)) {
-                    makeMove(moves[i]);
-                    return moves[i];
-                }
-            }
-            return false;
-        },
+        move: move,
 
         getMoves: getMoves,
 
