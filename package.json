@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
   "main": "src/draughts.js",
+  "type": "module",
   "unpkg": "dist/draughts.min.js",
   "files": [
     "src",

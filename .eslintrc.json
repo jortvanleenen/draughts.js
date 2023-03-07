@@ -5,6 +5,13 @@
     "mocha": true,
     "es6": true
   },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "extends": "eslint:recommended",
   "plugins": [
     "snakecasejs"
@@ -16,7 +23,10 @@
       "FunctionDeclaration",
       "CallExpression",
       "Property",
-      "MemberExpression"
+      "MemberExpression",
+      "MethodDefinition",
+      "ExportSpecifier",
+      "ImportSpecifier"
     ]
   },
   "rules": {
@@ -42,6 +52,12 @@
       }
     ],
     "snakecasejs/snakecasejs": "error",
-    "capitalized-comments": "error"
+    "capitalized-comments": [
+      "error",
+      "always",
+      {
+        "ignoreConsecutiveComments": true
+      }
+    ]
   }
 }

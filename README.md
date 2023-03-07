@@ -43,7 +43,7 @@ If you want to directly include the script in your HTML, you can use the followi
 
 ```html
 
-<script src="https://unpkg.com/@jortvl/draughts"></script>
+<script type="module" src="https://unpkg.com/@jortvl/draughts"></script>
 ```
 
 _Note that this will automatically lead to the inclusion of a minified version of the library._

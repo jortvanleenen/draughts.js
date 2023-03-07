@@ -309,11 +309,11 @@ const Draughts = function (fen) {
   }
 
   function generateFen() {
-    var black = [];
-    var white = [];
-    var externalPosition = convertPosition(position, 'external');
-    for (var i = 0; i < externalPosition.length; i++) {
-      switch (externalPosition[i]) {
+    let black = [];
+    let white = [];
+    const external_position = convertPosition(position, 'external');
+    for (let i = 0; i < external_position.length; i++) {
+      switch (external_position[i]) {
         case 'w':
           white.push(i);
           break;
@@ -1000,7 +1000,7 @@ const Draughts = function (fen) {
         converted_position = '-' + position.replace(/(.{10})/g, '$1-');
         break;
       case 'external':
-        converted_position = turn + position.replace(/-/g, '');
+        converted_position = '?' + position.replace(/-/g, '');
         break;
       default:
         throw new Error('convertPosition Unknown notation: ' + wanted_notation);
@@ -1304,4 +1304,4 @@ const Draughts = function (fen) {
   };
 };
 
-module.exports.Draughts = Draughts;
+export default Draughts;
