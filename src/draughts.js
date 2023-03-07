@@ -1084,10 +1084,10 @@ const Draughts = function (fen) {
 
     function ascii(unicode) {
         const external_position = convertPosition(position, 'external');
-        let output = '\n+-------------------------------+\n';
+        let output = '\n+----------------------------+\n';
         let position_index = 1;
         for (let row = 1; row <= 10; row++) {
-            output += '|\t';
+            output += '|   ';
             if (row % 2 !== 0) {
                 output += '  ';
             }
@@ -1106,9 +1106,9 @@ const Draughts = function (fen) {
             if (row % 2 === 0) {
                 output += '  ';
             }
-            output += '\t|\n';
+            output += '   |\n';
         }
-        output += '+-------------------------------+\n';
+        output += '+----------------------------+\n';
         return output;
     }
 
