@@ -263,13 +263,15 @@ draughts.load('W:W31-55:B1-20');
 // -> false, bad piece X
 ```
 
-### load_pdn(pdn, [ options ])
+### parsePdn(pdn, options)
 
 Load the moves of a game stored in
 [Portable Draughts Notation](https://en.wikipedia.org/wiki/Portable_Draughts_Notation).
-Options is a optional parameter that contains a 'newline_char' which is a
-string representation of a RegExp (and should not be pre-escaped) and defaults
-to '\r?\n'). Returns true if the pdn was parsed successfully, otherwise false.
+
+- The `pdn` parameter is expected to be a string.
+- The `options` parameter is optional and is expected to be an object.
+At the moment, only one option/key is supported: `newline_char` which is a string representation of a RegExp (and should not be pre-escaped). It defaults to '\r?\n', meaning new lines on most common platforms should be supported by default.
+- Returns true if the pdn was parsed successfully, otherwise false.
 
 ```js
 var draughts = new Draughts();
@@ -295,7 +297,7 @@ pdn = ['[Event "18th Computer Olympiad, 10x10 Draughts"]',
   '22-27 56. 30-24 17-21 57. 26x17 27-31 58. 17-12 31-36 59. 12-7 36-41 60. 38-32',
   '13-18 61. 7-2 23-29 62. 2-13 29x27 63. 13x47 4-10 64. 24-19 10-15 65. 47-24',
   '1-0'];
-draughts.load_pdn(pdn.join('\n'));
+draughts.parsePdn(pdn.join('\n')); // options parameter example: { newline_char: '<custom new line RegEx>' }
 // -> true
 
 draughts.fen();
