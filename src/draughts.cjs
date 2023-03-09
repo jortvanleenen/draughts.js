@@ -1300,4 +1300,4 @@ const Draughts = function (fen) {
     };
 };
 
-export default Draughts;
+if (typeof exports !== 'undefined') exports.Draughts = Draughts;

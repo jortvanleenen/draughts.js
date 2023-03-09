@@ -6,35 +6,36 @@ As of this, testing is not yet complete, and the API is not yet stable.
 It is still possible for the API of this library to change before an actual production ready release is published
 (version major >= 1).
 
-# draughts.js
+# draughts
 
-draughts.js is a Javascript draughts library that is used for draughts move
+Draughts is a Javascript draughts library that is used for draughts move
 generation/validation, piece placement/movement, and game status
 detection - basically everything but the AI.
 
 ## Installation
 
-The draughts.js library provides two ways of being used: as a Node.js module, and as a browser module.
+The draughts library provides two ways of being used: as a Node.js module, or as a browser script.
 
 ### Node.js (NPM)
 
-If you make use of Node.js, you can install draughts.js using npm:
+If you make use of Node.js, you can install draughts using npm:
 
 ```bash
 npm install @jortvl/draughts
 ```
 
-After the installation, you can use draughts.js in your Node.js project by importing it.
-**ES5:**
+After the installation, you can use draughts in your Node.js project by importing it.
+
+**CommonJS Module:**
 
 ```javascript
 var Draughts = require('@jortvl/draughts').Draughts;
 ```
 
-**ES6:**
+**ECMAScript Module:**
 
 ```javascript
-import * as draughts from '@jortvl/draughts';
+import Draughts from '@jortvl/draughts';
 ```
 
 ### Browser
@@ -43,7 +44,7 @@ If you want to directly include the script in your HTML, you can use the followi
 
 ```html
 
-<script type="module" src="https://unpkg.com/@jortvl/draughts"></script>
+<script src="https://unpkg.com/@jortvl/draughts"></script>
 ```
 
 _Note that this will automatically lead to the inclusion of a minified version of the library._
@@ -65,7 +66,7 @@ while (!draughts.gameOver()) {
 console.log(draughts.pdn());
 ```
 
-## Projects Using draughts.js
+## Projects Using draughts
 
 _If your application makes use of this library do let [me](mailto:jort@vleenen.nl) know and I will add you to this
 list!_

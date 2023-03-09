@@ -4,7 +4,7 @@
  *
  * @file
  */
-import Draughts from '../src/draughts.js';
+import Draughts from '../src/wrapper.mjs';
 import {assert} from 'chai';
 
 describe('Game creation', () => {

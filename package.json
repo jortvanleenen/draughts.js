@@ -30,8 +30,12 @@
     "url": "https://www.patreon.com/jortvanleenen"
   },
   "homepage": "https://github.com/jortvanleenen/draughts.js#readme",
-  "main": "src/draughts.js",
+  "main": "src/draughts.cjs",
   "type": "module",
+  "exports": {
+    "import": "./src/wrapper.mjs",
+    "require": "./src/draughts.cjs"
+  },
   "unpkg": "dist/draughts.min.js",
   "files": [
     "src",
@@ -49,7 +53,7 @@
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "mocha test/tests.js",
-    "prepublish": "mkdir dist | uglifyjs src/draughts.js -c -m --comments -o dist/draughts.min.js"
+    "test": "mocha test/tests.mjs",
+    "prepublish": "mkdir dist | uglifyjs src/draughts.cjs -c -m --comments -o dist/draughts.min.js"
   }
 }
