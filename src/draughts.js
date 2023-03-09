@@ -86,10 +86,9 @@ const Draughts = function (fen) {
         '0': '\u0020\u0020'
     };
 
-    const SIGNS = {
-        n: '-',
-        c: 'x'
-    };
+    function sign(flag) {
+        return flag === 'c' ? 'x' : '-';
+    }
 
     const BITS = {
         NORMAL: 1,
@@ -617,7 +616,7 @@ const Draughts = function (fen) {
             position = setCharAt(position, convertNumber(move.to, 'internal'), move.piece.toUpperCase());
         }
 
-        if (turn === BLACK) {
+        if (turn === BLACK) { // Full moves are counted
             number_of_moves += 1;
         }
         push(move);
@@ -1151,7 +1150,7 @@ const Draughts = function (fen) {
             if (verbose) {
                 move_history.push(makePretty(move));
             } else {
-                move_history.push(move.move.from + SIGNS[move.move.flags] + move.move.to);
+                move_history.push(move.move.from + sign(move.move.flags) + move.move.to);
             }
         }
 
