@@ -57,13 +57,13 @@ describe('Game creation from FEN', () => {
     it('Should be able to generate an empty board', () => {
         const draughts = new Draughts('W:W:B');
         assert.equal(draughts.position(),
-            '?00000000000000000000000000000000000000000000000000');
+            'W00000000000000000000000000000000000000000000000000');
     });
 
     it('Should be able to create a complex board', () => {
         const draughts = new Draughts('W:WK7,25,28,33,35,36,38,39,48,49:B3,9,13,14,17,19,23,24');
         assert.equal(draughts.position(),
-            '?00b000W0b000bb00b0b000bbw00w0000w0ww0ww00000000ww0');
+            'W00b000W0b000bb00b0b000bbw00w0000w0ww0ww00000000ww0');
     });
 });
 

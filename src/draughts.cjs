@@ -311,7 +311,7 @@ const Draughts = function (fen) {
         let black = [];
         let white = [];
         const external_position = convertPosition(position, 'external');
-        for (let i = 0; i < external_position.length; i++) {
+        for (let i = 1; i < external_position.length; i++) {
             switch (external_position[i]) {
                 case 'w':
                     white.push(i);
@@ -329,7 +329,7 @@ const Draughts = function (fen) {
                     break;
             }
         }
-        return turn.toUpperCase() + ':W' + white.join(',') + ':B' + black.join(',');
+        return turn + ':W' + white.join(',') + ':B' + black.join(',');
     }
 
     function generatePdn(options) {
@@ -1028,7 +1028,7 @@ const Draughts = function (fen) {
                 converted_position = '-' + position.replace(/(.{10})/g, '$1-');
                 break;
             case 'external':
-                converted_position = '?' + position.replace(/-/g, '');
+                converted_position = turn + position.replace(/-/g, '');
                 break;
             default:
                 throw new Error('convertPosition Unknown notation: ' + wanted_notation);
