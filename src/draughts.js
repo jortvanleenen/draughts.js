@@ -620,8 +620,8 @@ const Draughts = function (fen) {
         if (turn === BLACK) {
             number_of_moves += 1;
         }
-        turn = swap_color(turn);
         push(move);
+        turn = swap_color(turn);
     }
 
     function get(square) {
@@ -915,8 +915,8 @@ const Draughts = function (fen) {
 
     function undoMove() {
         let old = history.pop();
-        let oldState = states.pop();
-        if (!old || !oldState) {
+        let old_state = states.pop();
+        if (!old || !old_state) {
             return null;
         }
 
@@ -1113,11 +1113,10 @@ const Draughts = function (fen) {
     }
 
     function inThreefoldRepetition() {
-        // Check if an element occurs three times in 'states' array:
-        for (let i = 0; i < states.length; i++) {
+        for (const state of states) {
             let count = 0;
-            for (let j = 0; j < states.length; j++) {
-                if (states[i] === states[j]) {
+            for (const other_state of states) {
+                if (state === other_state) {
                     count++;
                 }
             }

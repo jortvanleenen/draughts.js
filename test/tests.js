@@ -200,6 +200,34 @@ describe('PDN parsing', () => {
     });
 });
 
+describe('History Validity', () => {
+    it('should be valid after making regular moves', () => {
+        const draughts = new Draughts();
+        draughts.move('35-30');
+        draughts.move('20-25');
+
+        assert.deepEqual(draughts.history(), ['35-30', '20-25']);
+    });
+
+    it('should be empty when clearing the board', () => {
+        const draughts = new Draughts();
+        draughts.move('35-30');
+        draughts.move('20-25');
+        draughts.clear();
+
+        assert.deepEqual(draughts.history(), []);
+    });
+
+    it('should update when undoing moves', () => {
+        const draughts = new Draughts();
+        draughts.move('35-30');
+        draughts.move('20-25');
+        draughts.undo();
+
+        assert.deepEqual(draughts.history(), ['35-30']);
+    });
+});
+
 //
 // describe("Perft", function() {
 //   var perfts = [
